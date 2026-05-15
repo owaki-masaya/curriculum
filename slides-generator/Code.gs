@@ -21,17 +21,16 @@ const CONFIG = {
     BORDER:          '#9dc3e6'
   },
   SHEET_NAME: '入力',
-  // スプレッドシートのセル位置
   CELLS: {
+    TEMPLATE_ID:     'B3',  // テンプレートスライドのURL or ID
     DATE:            'B2',
     PREV_RATE:       'B5',
     PREV_REMAINING:  'B6',
     CURR_RATE:       'B9',
     CURR_REMAINING:  'B10',
     OTHER:           'B13',
-    UNITS_START_ROW: 19   // 18行目がヘッダー、19行目からデータ
+    UNITS_START_ROW: 19
   },
-  // ユニットデータの列番号（1-indexed）
   UNIT_COLS: {
     NAME:          1,  // A
     PREV_RATE:     2,  // B
@@ -51,6 +50,7 @@ function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('📊 スライド作成')
     .addItem('▶ スライドを作成する', 'createWeeklySlides')
+    .addItem('🏷 使えるタグ一覧を確認する', 'showTagList')
     .addSeparator()
     .addItem('⚙ 初期セットアップ（初回のみ）', 'setupInputSheet')
     .addToUi();
@@ -60,7 +60,7 @@ function onOpen() {
 // メインエントリポイント
 // ========================================
 function createWeeklySlides() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss    = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
 
   if (!sheet) {
@@ -74,11 +74,14 @@ function createWeeklySlides() {
 
   try {
     ss.toast('スライドを作成中です...', '処理中', -1);
-    const data = readData(sheet);
-    const presentation = buildPresentation(data);
-    ss.toast('', '', 1);
+    const data       = readData(sheet);
+    const templateId = extractIdFromUrl(sheet.getRange(CONFIG.CELLS.TEMPLATE_ID).getValue());
+    const pres       = templateId
+      ? fillTemplate(templateId, data)
+      : buildPresentation(data);
 
-    const url = presentation.getUrl();
+    ss.toast('', '', 1);
+    const url = pres.getUrl();
     logSlideUrl(url, data.date);
 
     SpreadsheetApp.getUi().alert(
@@ -98,13 +101,112 @@ function createWeeklySlides() {
 }
 
 // ========================================
+// テンプレートモード: コピー → タグ置換
+// ========================================
+function fillTemplate(templateId, data) {
+  const dateStr      = Utilities.formatDate(data.date, 'Asia/Tokyo', 'yyyy/MM/dd');
+  const templateFile = DriveApp.getFileById(templateId);
+  const newFile      = templateFile.makeCopy('水曜定例_' + dateStr);
+  const pres         = SlidesApp.openById(newFile.getId());
+
+  const tags = buildTags(data);
+  Object.entries(tags).forEach(([placeholder, value]) => {
+    pres.replaceAllText(placeholder, value);
+  });
+
+  pres.saveAndClose();
+  return SlidesApp.openById(newFile.getId());
+}
+
+// ========================================
+// タグ（プレースホルダー）定義
+// ========================================
+// テンプレートスライドに下記のタグを入れておくと自動置換されます
+function buildTags(data) {
+  const dateStr = Utilities.formatDate(data.date, 'Asia/Tokyo', 'yyyy年MM月dd日');
+  const tags = {
+    '{{date}}':           dateStr,
+    '{{prev_rate}}':      formatRate(data.prevRate),
+    '{{prev_remaining}}': String(data.prevRemaining === '' ? '-' : data.prevRemaining),
+    '{{curr_rate}}':      formatRate(data.currRate),
+    '{{curr_remaining}}': String(data.currRemaining === '' ? '-' : data.currRemaining),
+    '{{other}}':          data.other ? String(data.other) : '（記入なし）'
+  };
+
+  // ユニット別タグ: {{u1_prev_rate}}, {{u1_prev_sched}}, {{u1_prev_unsched}} など
+  // ユニット番号は UNITS 配列の順番 (1〜10)
+  data.prevUnits.forEach((unit, i) => {
+    const n = i + 1;
+    tags[`{{u${n}_prev_rate}}`]    = formatRate(unit.rate);
+    tags[`{{u${n}_prev_sched}}`]   = unit.scheduled   !== '' ? String(unit.scheduled)   : '-';
+    tags[`{{u${n}_prev_unsched}}`] = unit.unscheduled !== '' ? String(unit.unscheduled) : '-';
+  });
+  data.currUnits.forEach((unit, i) => {
+    const n = i + 1;
+    tags[`{{u${n}_curr_rate}}`]    = formatRate(unit.rate);
+    tags[`{{u${n}_curr_sched}}`]   = unit.scheduled   !== '' ? String(unit.scheduled)   : '-';
+    tags[`{{u${n}_curr_unsched}}`] = unit.unscheduled !== '' ? String(unit.unscheduled) : '-';
+  });
+
+  return tags;
+}
+
+// ========================================
+// タグ一覧をダイアログで表示
+// ========================================
+function showTagList() {
+  const lines = [
+    '■ 共通タグ',
+    '{{date}}           → 対象日付（yyyy年MM月dd日）',
+    '{{prev_rate}}      → 前月 在庫進捗率（例: 75.5%）',
+    '{{prev_remaining}} → 前月 残件数（数値のみ）',
+    '{{curr_rate}}      → 今月 在庫進捗率',
+    '{{curr_remaining}} → 今月 残件数',
+    '{{other}}          → その他共有事項',
+    '',
+    '■ ユニット別タグ（n = 1〜10）',
+    '{{u1_prev_rate}}    → 原島ユニット 前月 掲出率',
+    '{{u1_prev_sched}}   → 原島ユニット 前月 設定予定',
+    '{{u1_prev_unsched}} → 原島ユニット 前月 アポ未調整',
+    '{{u1_curr_rate}}    → 原島ユニット 今月 掲出率',
+    '{{u1_curr_sched}}   → 原島ユニット 今月 設定予定',
+    '{{u1_curr_unsched}} → 原島ユニット 今月 アポ未調整',
+    '',
+    '  ※ u2=山本, u3=岡本, u4=飯塚, u5=岩崎',
+    '     u6=大口, u7=中野, u8=伊藤, u9=佐藤, u10=大脇'
+  ];
+
+  const html = HtmlService.createHtmlOutput(
+    '<pre style="font-family:monospace;font-size:13px;line-height:1.6">'
+    + lines.join('\n')
+    + '</pre>'
+  ).setWidth(520).setHeight(420);
+
+  SpreadsheetApp.getUi().showModalDialog(html, '🏷 使えるタグ一覧');
+}
+
+// ========================================
+// URL または ID から Slides ID を抽出
+// ========================================
+function extractIdFromUrl(val) {
+  if (!val) return null;
+  const s = String(val).trim();
+  // Google スライドの URL 形式: .../d/{ID}/...
+  const m = s.match(/\/d\/([a-zA-Z0-9_-]{25,})/);
+  if (m) return m[1];
+  // ID のみ（英数字 25文字以上）
+  if (/^[a-zA-Z0-9_-]{25,}$/.test(s)) return s;
+  return null;
+}
+
+// ========================================
 // データ読み込み
 // ========================================
 function readData(sheet) {
   const C = CONFIG.CELLS;
 
   const dateVal = sheet.getRange(C.DATE).getValue();
-  const date = dateVal instanceof Date ? dateVal : new Date();
+  const date    = dateVal instanceof Date ? dateVal : new Date();
 
   const prevRate      = sheet.getRange(C.PREV_RATE).getValue();
   const prevRemaining = sheet.getRange(C.PREV_REMAINING).getValue();
@@ -114,7 +216,7 @@ function readData(sheet) {
 
   const prevUnits = [];
   const currUnits = [];
-  const UC = CONFIG.UNIT_COLS;
+  const UC        = CONFIG.UNIT_COLS;
 
   CONFIG.UNITS.forEach((name, i) => {
     const row = C.UNITS_START_ROW + i;
@@ -136,147 +238,114 @@ function readData(sheet) {
 }
 
 // ========================================
-// プレゼンテーション作成
+// 自動生成モード（テンプレートIDなし時のフォールバック）
 // ========================================
 function buildPresentation(data) {
-  const dateStr    = Utilities.formatDate(data.date, 'Asia/Tokyo', 'yyyy/MM/dd');
-  const pres       = SlidesApp.create('水曜定例_' + dateStr);
+  const dateStr       = Utilities.formatDate(data.date, 'Asia/Tokyo', 'yyyy/MM/dd');
+  const pres          = SlidesApp.create('水曜定例_' + dateStr);
   const defaultSlides = pres.getSlides();
-  const dim        = { w: pres.getPageWidth(), h: pres.getPageHeight() };
+  const dim           = { w: pres.getPageWidth(), h: pres.getPageHeight() };
 
   addTitleSlide(pres, dim, data);
   addInventorySlide(pres, dim, '前月', data.prevRate, data.prevRemaining, data.prevUnits);
   addInventorySlide(pres, dim, '今月', data.currRate, data.currRemaining, data.currUnits);
   addOtherItemsSlide(pres, dim, data.other);
 
-  // デフォルトの空スライドを削除（カスタムスライドを追加後でないと削除できない）
   defaultSlides.forEach(s => s.remove());
-
   return pres;
 }
 
-// ========================================
-// スライド1: タイトル
-// ========================================
 function addTitleSlide(pres, dim, data) {
   const slide = pres.appendSlide(SlidesApp.PredefinedLayout.BLANK);
-  const C = CONFIG.COLOR;
+  const C     = CONFIG.COLOR;
 
   slide.getBackground().setSolidFill(C.HEADER_BG);
-
-  // 下部アクセントライン
   insertRect(slide, 0, dim.h - 10, dim.w, 10, '#9dc3e6');
 
-  // タイトル
   const titleBox = slide.insertTextBox('水曜定例');
   titleBox.setLeft(60).setTop(dim.h * 0.22).setWidth(dim.w - 120).setHeight(100);
   applyTextStyle(titleBox, { size: 54, bold: true, color: C.HEADER_FG, align: 'CENTER' });
 
-  // 日付
   const dateStr = Utilities.formatDate(data.date, 'Asia/Tokyo', 'yyyy年MM月dd日');
   const dateBox = slide.insertTextBox(dateStr);
   dateBox.setLeft(60).setTop(dim.h * 0.58).setWidth(dim.w - 120).setHeight(50);
   applyTextStyle(dateBox, { size: 24, bold: false, color: '#9dc3e6', align: 'CENTER' });
 }
 
-// ========================================
-// スライド2/3: 在庫進捗率
-// ========================================
 function addInventorySlide(pres, dim, label, rate, remaining, units) {
-  const slide = pres.appendSlide(SlidesApp.PredefinedLayout.BLANK);
-  const C     = CONFIG.COLOR;
-
+  const slide     = pres.appendSlide(SlidesApp.PredefinedLayout.BLANK);
+  const C         = CONFIG.COLOR;
   const PAD       = 25;
   const HEADER_H  = 62;
   const SUMMARY_H = 44;
   const TABLE_TOP = HEADER_H + SUMMARY_H + 6;
   const TABLE_H   = dim.h - TABLE_TOP - PAD;
 
-  // ヘッダー帯
   insertRect(slide, 0, 0, dim.w, HEADER_H, C.HEADER_BG);
   const headerBox = slide.insertTextBox(label + ' 在庫進捗率');
   headerBox.setLeft(PAD).setTop(8).setWidth(dim.w - PAD * 2).setHeight(HEADER_H - 16);
   applyTextStyle(headerBox, { size: 30, bold: true, color: C.HEADER_FG });
 
-  // サマリー行
-  const rateStr   = formatRate(rate);
-  const remainStr = formatCount(remaining, '件');
   const summaryBox = slide.insertTextBox(
-    '在庫進捗率: ' + rateStr + '　　残件数: ' + remainStr
+    '在庫進捗率: ' + formatRate(rate) + '　　残件数: ' + formatCount(remaining, '件')
   );
   summaryBox.setLeft(PAD).setTop(HEADER_H + 4).setWidth(dim.w - PAD * 2).setHeight(SUMMARY_H - 4);
   applyTextStyle(summaryBox, { size: 20, bold: true, color: C.SUMMARY_TEXT });
 
-  // ユニット別テーブル
   drawUnitTable(slide, units, PAD, TABLE_TOP, dim.w - PAD * 2, TABLE_H);
 }
 
-// ========================================
-// スライド4: その他共有事項
-// ========================================
 function addOtherItemsSlide(pres, dim, content) {
-  const slide = pres.appendSlide(SlidesApp.PredefinedLayout.BLANK);
-  const C     = CONFIG.COLOR;
-  const PAD   = 25;
+  const slide    = pres.appendSlide(SlidesApp.PredefinedLayout.BLANK);
+  const C        = CONFIG.COLOR;
+  const PAD      = 25;
   const HEADER_H = 62;
 
-  // ヘッダー帯
   insertRect(slide, 0, 0, dim.w, HEADER_H, C.HEADER_BG);
   const headerBox = slide.insertTextBox('その他共有事項');
   headerBox.setLeft(PAD).setTop(8).setWidth(dim.w - PAD * 2).setHeight(HEADER_H - 16);
   applyTextStyle(headerBox, { size: 30, bold: true, color: C.HEADER_FG });
 
-  // 本文
-  const text = content ? String(content) : '（今週の共有事項はありません）';
+  const text       = content ? String(content) : '（今週の共有事項はありません）';
   const contentBox = slide.insertTextBox(text);
   contentBox.setLeft(PAD).setTop(HEADER_H + PAD).setWidth(dim.w - PAD * 2).setHeight(dim.h - HEADER_H - PAD * 2);
   applyTextStyle(contentBox, { size: 18, bold: false, color: C.TEXT });
 }
 
-// ========================================
-// ユニットテーブル描画
-// ========================================
 function drawUnitTable(slide, units, left, top, tableW, tableH) {
   const C       = CONFIG.COLOR;
   const numRows = units.length + 1;
   const rowH    = Math.floor(tableH / numRows);
   const colW    = [tableW * 0.30, tableW * 0.18, tableW * 0.26, tableW * 0.26];
-  const headers = ['ユニット名', '掲出率', '設定予定', 'アポ未調整件数'];
 
-  // ヘッダー行
-  drawTableRow(slide, headers, left, top, colW, rowH, {
-    bgColor: C.TABLE_HEAD_BG, textColor: C.TABLE_HEAD_FG,
-    fontSize: 12, bold: true, aligns: ['CENTER', 'CENTER', 'CENTER', 'CENTER']
-  });
-
-  // データ行
-  units.forEach((unit, i) => {
-    const y      = top + rowH * (i + 1);
-    const bgColor = i % 2 === 0 ? C.ROW_BG : C.ROW_ALT_BG;
-    const values = [
-      unit.name,
-      formatRate(unit.rate),
-      formatCount(unit.scheduled, '件'),
-      formatCount(unit.unscheduled, '件')
-    ];
-    drawTableRow(slide, values, left, y, colW, rowH, {
-      bgColor, textColor: C.TEXT,
-      fontSize: 11, bold: false,
-      aligns: ['START', 'CENTER', 'CENTER', 'CENTER']
+  drawTableRow(slide, ['ユニット名', '掲出率', '設定予定', 'アポ未調整件数'],
+    left, top, colW, rowH, {
+      bgColor: C.TABLE_HEAD_BG, textColor: C.TABLE_HEAD_FG,
+      fontSize: 12, bold: true,
+      aligns: ['CENTER', 'CENTER', 'CENTER', 'CENTER']
     });
+
+  units.forEach((unit, i) => {
+    const bgColor = i % 2 === 0 ? C.ROW_BG : C.ROW_ALT_BG;
+    drawTableRow(slide,
+      [unit.name, formatRate(unit.rate), formatCount(unit.scheduled, '件'), formatCount(unit.unscheduled, '件')],
+      left, top + rowH * (i + 1), colW, rowH, {
+        bgColor, textColor: C.TEXT, fontSize: 11, bold: false,
+        aligns: ['START', 'CENTER', 'CENTER', 'CENTER']
+      });
   });
 }
 
 function drawTableRow(slide, values, left, top, colWidths, rowH, opts) {
   const C = CONFIG.COLOR;
-  let x = left;
+  let x   = left;
   values.forEach((val, col) => {
     const cell = slide.insertShape(SlidesApp.ShapeType.RECTANGLE);
     cell.setLeft(x).setTop(top).setWidth(colWidths[col]).setHeight(rowH);
     cell.getFill().setSolidFill(opts.bgColor);
     cell.getBorder().setWeight(0.5).getLineFill().setSolidFill(C.BORDER);
 
-    const tb = slide.insertTextBox(String(val));
+    const tb    = slide.insertTextBox(String(val));
     tb.setLeft(x + 3).setTop(top + 2).setWidth(colWidths[col] - 6).setHeight(rowH - 4);
     const align = opts.aligns[col] === 'CENTER'
       ? SlidesApp.ParagraphAlignment.CENTER
@@ -299,7 +368,7 @@ function insertRect(slide, l, t, w, h, color) {
 }
 
 function applyTextStyle(textBox, opts) {
-  const ts = textBox.getText().getTextStyle();
+  const ts    = textBox.getText().getTextStyle();
   ts.setFontSize(opts.size).setBold(!!opts.bold).setForegroundColor(opts.color);
   const align = opts.align === 'CENTER'
     ? SlidesApp.ParagraphAlignment.CENTER
@@ -323,15 +392,12 @@ function formatCount(val, suffix) {
 // 作成履歴の記録
 // ========================================
 function logSlideUrl(url, date) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let log  = ss.getSheetByName('作成履歴');
+  const ss  = SpreadsheetApp.getActiveSpreadsheet();
+  let log   = ss.getSheetByName('作成履歴');
   if (!log) {
     log = ss.insertSheet('作成履歴');
     log.appendRow(['作成日時', '対象日付', 'スライドURL']);
-    log.getRange('1:1')
-      .setBackground('#1f4e79')
-      .setFontColor('#ffffff')
-      .setFontWeight('bold');
+    log.getRange('1:1').setBackground('#1f4e79').setFontColor('#ffffff').setFontWeight('bold');
     log.setColumnWidth(3, 400);
   }
   const now     = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
@@ -343,8 +409,8 @@ function logSlideUrl(url, date) {
 // 初期セットアップ（初回のみ実行）
 // ========================================
 function setupInputSheet() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet   = ss.getSheetByName(CONFIG.SHEET_NAME);
 
   if (sheet) {
     const res = SpreadsheetApp.getUi().alert(
@@ -363,23 +429,26 @@ function setupInputSheet() {
 
   SpreadsheetApp.getUi().alert(
     '✅ セットアップ完了',
-    '「入力」シートを作成しました。\n\n各セルに数値を入力後、メニューの\n「スライド作成 > スライドを作成する」を実行してください。',
+    '「入力」シートを作成しました。\n\n' +
+    '① B3 にテンプレートスライドのURLを貼り付ける\n' +
+    '② 各セルに数値を入力する\n' +
+    '③ メニュー「スライドを作成する」を実行する',
     SpreadsheetApp.getUi().ButtonSet.OK
   );
 }
 
 function buildInputSheet(sheet) {
-  const C = CONFIG.CELLS;
+  const C  = CONFIG.CELLS;
 
   // 列幅
   sheet.setColumnWidth(1, 190);  // A: ラベル
-  sheet.setColumnWidth(2, 130);  // B: 前月 掲出率 / 値
-  sheet.setColumnWidth(3, 130);  // C: 前月 設定予定
-  sheet.setColumnWidth(4, 140);  // D: 前月 アポ未調整
+  sheet.setColumnWidth(2, 130);  // B: 値 / 前月掲出率
+  sheet.setColumnWidth(3, 130);  // C: 前月設定予定
+  sheet.setColumnWidth(4, 140);  // D: 前月アポ未調整
   sheet.setColumnWidth(5, 18);   // E: スペーサー
-  sheet.setColumnWidth(6, 130);  // F: 今月 掲出率
-  sheet.setColumnWidth(7, 130);  // G: 今月 設定予定
-  sheet.setColumnWidth(8, 140);  // H: 今月 アポ未調整
+  sheet.setColumnWidth(6, 130);  // F: 今月掲出率
+  sheet.setColumnWidth(7, 130);  // G: 今月設定予定
+  sheet.setColumnWidth(8, 140);  // H: 今月アポ未調整
 
   // ---- Row 1: ヘッダー ----
   sheet.setRowHeight(1, 48);
@@ -395,6 +464,14 @@ function buildInputSheet(sheet) {
     .setNumberFormat('yyyy/MM/dd')
     .setBackground('#fffde7')
     .setBorder(true, true, true, true, null, null, '#f0b400', SpreadsheetApp.BorderStyle.SOLID);
+
+  // ---- Row 3: テンプレートURL ----
+  setLabel(sheet, 'A3', 'テンプレートURL/ID');
+  sheet.getRange('B3:H3').merge()
+    .setBackground('#e8f4fd')
+    .setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP)
+    .setBorder(true, true, true, true, null, null, '#4a90d9', SpreadsheetApp.BorderStyle.SOLID);
+  sheet.getRange('A3').setFontColor('#0a5c8c');
 
   // ---- Row 4: 前月 セクションヘッダー ----
   setSectionHeader(sheet, 'A4:H4', '■ 前月 在庫進捗率');
@@ -444,30 +521,27 @@ function buildInputSheet(sheet) {
     '今月 掲出率(%)', '今月 設定予定(件)', '今月 アポ未調整(件)'
   ]])
     .setBackground('#dae3f3').setFontWeight('bold')
-    .setHorizontalAlignment('center')
-    .setWrap(true);
+    .setHorizontalAlignment('center').setWrap(true);
   sheet.setRowHeight(18, 36);
 
   // ---- Row 19-28: ユニット行 ----
   const UC = CONFIG.UNIT_COLS;
   CONFIG.UNITS.forEach((name, i) => {
-    const row = C.UNITS_START_ROW + i;
-    const bg  = i % 2 === 0 ? '#ffffff' : '#f5f8ff';
+    const row     = C.UNITS_START_ROW + i;
+    const bg      = i % 2 === 0 ? '#ffffff' : '#f5f8ff';
     const inputBg = i % 2 === 0 ? '#fffde7' : '#fff9db';
 
-    sheet.getRange(row, UC.NAME).setValue(name)
-      .setBackground(bg).setFontWeight('bold');
+    sheet.getRange(row, UC.NAME).setValue(name).setBackground(bg).setFontWeight('bold');
     sheet.getRange(row, UC.PREV_RATE, 1, 3).setBackground(inputBg);
     sheet.getRange(row, 5).setBackground(bg);
     sheet.getRange(row, UC.CURR_RATE, 1, 3).setBackground(inputBg);
-
-    sheet.getRange(row, 1, 1, 8)
-      .setBorder(false, true, true, true, true, false,
-        '#c8d8ec', SpreadsheetApp.BorderStyle.SOLID_LIGHT);
+    sheet.getRange(row, 1, 1, 8).setBorder(
+      false, true, true, true, true, false,
+      '#c8d8ec', SpreadsheetApp.BorderStyle.SOLID_LIGHT
+    );
     sheet.setRowHeight(row, 26);
   });
 
-  // 行1を固定
   sheet.setFrozenRows(1);
 }
 
