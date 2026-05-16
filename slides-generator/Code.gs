@@ -50,6 +50,8 @@ function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('📊 スライド作成')
     .addItem('▶ スライドを作成する', 'createWeeklySlides')
+    .addSeparator()
+    .addItem('📋 テンプレートを新規作成する', 'createSampleTemplate')
     .addItem('🏷 使えるタグ一覧を確認する', 'showTagList')
     .addSeparator()
     .addItem('⚙ 初期セットアップ（初回のみ）', 'setupInputSheet')
@@ -235,6 +237,157 @@ function readData(sheet) {
   });
 
   return { date, prevRate, prevRemaining, currRate, currRemaining, other, prevUnits, currUnits };
+}
+
+// ========================================
+// テンプレートスライドを新規作成して B3 に自動設定
+// ========================================
+function createSampleTemplate() {
+  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+
+  if (!sheet) {
+    SpreadsheetApp.getUi().alert(
+      'エラー',
+      '先に「初期セットアップ」を実行してください。',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    return;
+  }
+
+  try {
+    ss.toast('テンプレートスライドを作成中...', '処理中', -1);
+
+    const pres          = SlidesApp.create('【テンプレート】水曜定例');
+    const defaultSlides = pres.getSlides();
+    const dim           = { w: pres.getPageWidth(), h: pres.getPageHeight() };
+
+    addTemplateTitleSlide(pres, dim);
+    addInventoryTemplateSlide(pres, dim, '前月', 'prev');
+    addInventoryTemplateSlide(pres, dim, '今月', 'curr');
+    addOtherTemplateSlide(pres, dim);
+    defaultSlides.forEach(s => s.remove());
+
+    const url = pres.getUrl();
+    sheet.getRange(CONFIG.CELLS.TEMPLATE_ID).setValue(url);
+
+    ss.toast('', '', 1);
+    SpreadsheetApp.getUi().alert(
+      '✅ テンプレート作成完了！',
+      'テンプレートスライドを作成し、B3 に自動設定しました。\n\n' +
+      'そのまま「スライドを作成する」を実行できます。\n\n' +
+      'テンプレートのデザインは自由に変更できます。\n' +
+      '（{{タグ}} の文字列は削除しないでください）\n\n' +
+      url,
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+  } catch (e) {
+    ss.toast('', '', 1);
+    SpreadsheetApp.getUi().alert('エラー', e.message, SpreadsheetApp.getUi().ButtonSet.OK);
+    Logger.log(e.stack);
+  }
+}
+
+// テンプレート: タイトルスライド
+function addTemplateTitleSlide(pres, dim) {
+  const slide = pres.appendSlide(SlidesApp.PredefinedLayout.BLANK);
+  const C     = CONFIG.COLOR;
+
+  slide.getBackground().setSolidFill(C.HEADER_BG);
+  insertRect(slide, 0, dim.h - 10, dim.w, 10, '#9dc3e6');
+
+  const titleBox = slide.insertTextBox('水曜定例');
+  titleBox.setLeft(60).setTop(dim.h * 0.22).setWidth(dim.w - 120).setHeight(100);
+  applyTextStyle(titleBox, { size: 54, bold: true, color: C.HEADER_FG, align: 'CENTER' });
+
+  const dateBox = slide.insertTextBox('{{date}}');
+  dateBox.setLeft(60).setTop(dim.h * 0.58).setWidth(dim.w - 120).setHeight(50);
+  applyTextStyle(dateBox, { size: 24, bold: false, color: '#9dc3e6', align: 'CENTER' });
+}
+
+// テンプレート: 前月 / 今月 在庫進捗率スライド（ネイティブテーブルにタグ配置）
+function addInventoryTemplateSlide(pres, dim, label, prefix) {
+  const slide     = pres.appendSlide(SlidesApp.PredefinedLayout.BLANK);
+  const C         = CONFIG.COLOR;
+  const PAD       = 25;
+  const HEADER_H  = 62;
+  const SUMMARY_H = 44;
+  const TABLE_TOP = HEADER_H + SUMMARY_H + 6;
+  const TABLE_W   = dim.w - PAD * 2;
+
+  // ヘッダー帯
+  insertRect(slide, 0, 0, dim.w, HEADER_H, C.HEADER_BG);
+  const headerBox = slide.insertTextBox(label + ' 在庫進捗率');
+  headerBox.setLeft(PAD).setTop(8).setWidth(TABLE_W).setHeight(HEADER_H - 16);
+  applyTextStyle(headerBox, { size: 30, bold: true, color: C.HEADER_FG });
+
+  // サマリー行（タグ埋め込み）
+  const summaryBox = slide.insertTextBox(
+    '在庫進捗率: {{' + prefix + '_rate}}　　残件数: {{' + prefix + '_remaining}}件'
+  );
+  summaryBox.setLeft(PAD).setTop(HEADER_H + 4).setWidth(TABLE_W).setHeight(SUMMARY_H - 4);
+  applyTextStyle(summaryBox, { size: 20, bold: true, color: C.SUMMARY_TEXT });
+
+  // ネイティブテーブル（ヘッダー行 + 10ユニット行）
+  const numRows = CONFIG.UNITS.length + 1;
+  const table   = slide.insertTable(numRows, 4);
+  table.setLeft(PAD).setTop(TABLE_TOP).setWidth(TABLE_W);
+
+  // 列幅
+  [TABLE_W * 0.30, TABLE_W * 0.18, TABLE_W * 0.26, TABLE_W * 0.26]
+    .forEach((w, i) => table.getColumn(i).setWidth(w));
+
+  // ヘッダー行
+  ['ユニット名', '掲出率', '設定予定(件)', 'アポ未調整(件)'].forEach((text, col) => {
+    const cell = table.getCell(0, col);
+    cell.getText().setText(text);
+    cell.getText().getTextStyle()
+      .setFontSize(12).setBold(true).setForegroundColor(C.TABLE_HEAD_FG);
+    cell.getFill().setSolidFill(C.TABLE_HEAD_BG);
+    cell.getText().getParagraphStyle()
+      .setParagraphAlignment(SlidesApp.ParagraphAlignment.CENTER);
+  });
+
+  // データ行（ユニット名 + タグ）
+  CONFIG.UNITS.forEach((name, i) => {
+    const row    = i + 1;
+    const n      = i + 1;
+    const bg     = i % 2 === 0 ? C.ROW_BG : C.ROW_ALT_BG;
+    const values = [
+      name,
+      '{{u' + n + '_' + prefix + '_rate}}',
+      '{{u' + n + '_' + prefix + '_sched}}',
+      '{{u' + n + '_' + prefix + '_unsched}}'
+    ];
+    values.forEach((val, col) => {
+      const cell = table.getCell(row, col);
+      cell.getText().setText(val);
+      cell.getText().getTextStyle().setFontSize(11).setForegroundColor(C.TEXT);
+      cell.getFill().setSolidFill(bg);
+      if (col > 0) {
+        cell.getText().getParagraphStyle()
+          .setParagraphAlignment(SlidesApp.ParagraphAlignment.CENTER);
+      }
+    });
+  });
+}
+
+// テンプレート: その他共有事項スライド
+function addOtherTemplateSlide(pres, dim) {
+  const slide    = pres.appendSlide(SlidesApp.PredefinedLayout.BLANK);
+  const C        = CONFIG.COLOR;
+  const PAD      = 25;
+  const HEADER_H = 62;
+
+  insertRect(slide, 0, 0, dim.w, HEADER_H, C.HEADER_BG);
+  const headerBox = slide.insertTextBox('その他共有事項');
+  headerBox.setLeft(PAD).setTop(8).setWidth(dim.w - PAD * 2).setHeight(HEADER_H - 16);
+  applyTextStyle(headerBox, { size: 30, bold: true, color: C.HEADER_FG });
+
+  const contentBox = slide.insertTextBox('{{other}}');
+  contentBox.setLeft(PAD).setTop(HEADER_H + PAD)
+    .setWidth(dim.w - PAD * 2).setHeight(dim.h - HEADER_H - PAD * 2);
+  applyTextStyle(contentBox, { size: 18, bold: false, color: C.TEXT });
 }
 
 // ========================================
@@ -430,9 +583,13 @@ function setupInputSheet() {
   SpreadsheetApp.getUi().alert(
     '✅ セットアップ完了',
     '「入力」シートを作成しました。\n\n' +
-    '① B3 にテンプレートスライドのURLを貼り付ける\n' +
+    '【はじめて使う場合】\n' +
+    '① メニュー「📋 テンプレートを新規作成する」を実行\n' +
+    '   → テンプレートが自動作成され B3 に設定されます\n\n' +
+    '【既存のテンプレートがある場合】\n' +
+    '① B3 にテンプレートスライドのURLを貼り付ける\n\n' +
     '② 各セルに数値を入力する\n' +
-    '③ メニュー「スライドを作成する」を実行する',
+    '③ メニュー「▶ スライドを作成する」を実行する',
     SpreadsheetApp.getUi().ButtonSet.OK
   );
 }
