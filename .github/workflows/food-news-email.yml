@@ -1,0 +1,43 @@
+name: 飲食業界ニュース定期配信
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # 毎日 00:00 UTC (= 09:00 JST)
+  workflow_dispatch:
+
+jobs:
+  deliver:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('food-news-mailer/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: pip install -r food-news-mailer/requirements.txt
+
+      - name: Run delivery
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          TO_ADDRESSES: ${{ secrets.TO_ADDRESSES }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          FROM_NAME: ${{ secrets.FROM_NAME }}
+          MAX_NEWS_ITEMS: ${{ secrets.MAX_NEWS_ITEMS }}
+          MAX_IR_ITEMS: ${{ secrets.MAX_IR_ITEMS }}
+          LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
+        run: cd food-news-mailer && python3 main.py --now

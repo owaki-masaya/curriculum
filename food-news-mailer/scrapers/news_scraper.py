@@ -7,26 +7,32 @@ import time
 
 RSS_SOURCES = [
     {
-        "url": "https://www.hotpepper.jp/mesitsu/rss/",
-        "source": "グルメニュース (Mesitsu)",
+        "url": "https://rss.itmedia.co.jp/rss/2.0/soho.xml",
+        "source": "ITmedia (飲食関連含む)",
     },
     {
-        "url": "https://foodbiz.co.jp/feed/",
-        "source": "フードビズ",
+        "url": "https://www.nikkei.com/rss/industry/food.rdf",
+        "source": "日経 食品",
     },
     {
-        "url": "https://www.inshokuten.com/news/rss.php",
-        "source": "飲食店.COM",
+        "url": "https://news.yahoo.co.jp/rss/topics/domestic.xml",
+        "source": "Yahoo!ニュース 国内",
     },
     {
-        "url": "https://news.google.com/rss/search?q=%E9%A3%B2%E9%A3%9F%E6%A5%AD%E7%95%8C&hl=ja&gl=JP&ceid=JP:ja",
-        "source": "Google News - 飲食業界",
-    },
-    {
-        "url": "https://news.google.com/rss/search?q=%E5%A4%96%E9%A3%9F%E7%94%A3%E6%A5%AD&hl=ja&gl=JP&ceid=JP:ja",
-        "source": "Google News - 外食産業",
+        "url": "https://www3.nhk.or.jp/rss/news/cat5.xml",
+        "source": "NHKニュース 経済",
     },
 ]
+
+# Keywords used to filter relevant food/restaurant industry articles
+FOOD_KEYWORDS = [
+    "飲食", "外食", "レストラン", "食品", "フード", "居酒屋", "カフェ",
+    "料理", "食事", "グルメ", "食材", "飲料", "ファストフード", "コンビニ",
+    "スーパー", "食料",
+]
+
+# Minimum number of items to return even if keyword filtering yields fewer
+MIN_ITEMS_FALLBACK = 5
 
 ITEMS_PER_SOURCE = 5
 REQUEST_TIMEOUT = 10
@@ -66,6 +72,7 @@ def _fetch_feed(source: dict, items_per_source: int) -> list[dict]:
     source_name = source["source"]
     results: list[dict] = []
 
+    feed = None
     try:
         response = requests.get(url, timeout=REQUEST_TIMEOUT, headers={
             "User-Agent": "FoodNewsMailer/1.0 (RSS reader)"
@@ -73,13 +80,21 @@ def _fetch_feed(source: dict, items_per_source: int) -> list[dict]:
         response.raise_for_status()
         feed = feedparser.parse(response.content)
     except requests.exceptions.Timeout:
-        print(f"[news_scraper] Timeout fetching {url}")
-        return results
+        print(f"[news_scraper] Timeout fetching {url}, trying feedparser directly")
     except requests.exceptions.RequestException as exc:
-        print(f"[news_scraper] Request error for {url}: {exc}")
-        return results
+        print(f"[news_scraper] Request error for {url}: {exc}, trying feedparser directly")
     except Exception as exc:
-        print(f"[news_scraper] Unexpected error for {url}: {exc}")
+        print(f"[news_scraper] Unexpected error for {url}: {exc}, trying feedparser directly")
+
+    # Fallback: let feedparser use its own HTTP client
+    if feed is None or feed.bozo and not feed.entries:
+        try:
+            feed = feedparser.parse(url)
+        except Exception as exc:
+            print(f"[news_scraper] feedparser direct parse also failed for {url}: {exc}")
+            return results
+
+    if feed is None:
         return results
 
     for entry in feed.entries[:items_per_source]:
@@ -103,6 +118,12 @@ def _fetch_feed(source: dict, items_per_source: int) -> list[dict]:
     return results
 
 
+def _is_food_related(item: dict) -> bool:
+    """Return True if the item title or summary contains a food-related keyword."""
+    text = (item.get("title") or "") + " " + (item.get("summary") or "")
+    return any(kw in text for kw in FOOD_KEYWORDS)
+
+
 def fetch_food_news(max_items: int = 20) -> list[dict]:
     """Scrape food industry news from multiple RSS feeds.
 
@@ -112,23 +133,36 @@ def fetch_food_news(max_items: int = 20) -> list[dict]:
         summary      – plain-text excerpt (up to 500 chars)
         source       – human-readable source name
         published_at – ISO-8601 string (UTC) or None
+
+    Items are filtered to those whose title or summary contain food/restaurant
+    keywords.  If fewer than MIN_ITEMS_FALLBACK pass the filter, unfiltered
+    items are appended to ensure the email is not empty.
     """
     all_items: list[dict] = []
 
     for source in RSS_SOURCES:
-        if len(all_items) >= max_items:
-            break
-
-        remaining_slots = max_items - len(all_items)
-        per_source_limit = min(ITEMS_PER_SOURCE, remaining_slots)
-
-        items = _fetch_feed(source, per_source_limit)
+        # Fetch up to ITEMS_PER_SOURCE per source regardless of running total
+        # so filtering has enough candidates.
+        items = _fetch_feed(source, ITEMS_PER_SOURCE)
         all_items.extend(items)
 
         # Small courtesy delay between requests
         time.sleep(0.5)
 
-    return all_items[:max_items]
+    # Apply keyword filter
+    filtered = [item for item in all_items if _is_food_related(item)]
+
+    # Fallback: if filtering left too few items, top-up with unfiltered ones
+    if len(filtered) < MIN_ITEMS_FALLBACK:
+        seen_urls = {item["url"] for item in filtered}
+        for item in all_items:
+            if item["url"] not in seen_urls:
+                filtered.append(item)
+                seen_urls.add(item["url"])
+            if len(filtered) >= MIN_ITEMS_FALLBACK:
+                break
+
+    return filtered[:max_items]
 
 
 if __name__ == "__main__":
