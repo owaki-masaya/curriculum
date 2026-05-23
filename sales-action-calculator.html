@@ -287,41 +287,6 @@ body{background:#fff;}
     </div>
   </div>
 
-  <!-- アタック戦略 -->
-  <div class="card">
-    <div class="card-ttl">アタック戦略 ＆ 割合設定</div>
-    <div class="strat-grid" style="margin-bottom:16px">
-      <button class="strat-card selected" id="strat-set" onclick="setStrategy('set')">
-        <div class="st-icon">🏠</div>
-        <div class="st-name">白地メイン・PRセット</div>
-        <div class="st-desc">白地でPR＋NETを同時に狙う。残り割合は白地NET単独へ。</div>
-      </button>
-      <button class="strat-card" id="strat-split" onclick="setStrategy('split')">
-        <div class="st-icon">📍</div>
-        <div class="st-name">白地・ネット利用 分けてアタック</div>
-        <div class="st-desc">白地→NET専用、ネット利用中→PR専用で棲み分け。</div>
-      </button>
-    </div>
-    <div style="background:var(--yll);border:2px solid var(--yl);border-radius:12px;padding:14px 16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
-        <span style="font-size:12px;font-weight:900;color:#1a1a1a" id="ratioLabel">🏠 セットで当たる割合</span>
-        <div style="display:flex;align-items:center;gap:8px">
-          <input type="number" min="0" max="100" value="100" id="ratioInput"
-            oninput="setRatio(this.value)"
-            style="width:64px;text-align:center;border:2px solid var(--yd);border-radius:8px;padding:5px 6px;font-family:var(--fm);font-size:16px;font-weight:700;background:#fff;color:#1a1a1a;outline:none;-moz-appearance:textfield">
-          <span style="font-family:var(--fm);font-size:16px;font-weight:700">%</span>
-        </div>
-      </div>
-      <input type="range" min="0" max="100" value="100" id="ratioSlider"
-        oninput="syncRatio(this.value)"
-        style="width:100%;-webkit-appearance:none;height:6px;border-radius:6px;outline:none;border:none;background:linear-gradient(to right,#1a1a1a 0%,#1a1a1a 100%,#E0E0E0 100%,#E0E0E0 100%);cursor:pointer">
-      <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;font-weight:800;color:var(--mu)">
-        <span id="ratioLeft" style="color:#1a1a1a">🏠 セット 100%</span>
-        <span id="ratioRight">🏠 NET単独 0%</span>
-      </div>
-    </div>
-  </div>
-
   <button class="nav-btn" onclick="switchTab('yomi')">次へ：ヨミを入力 →</button>
 </div><!-- /tab-goal -->
 
@@ -375,8 +340,6 @@ const ST = {
   },
   inNegManual: null,
   weeksLeft: 3,
-  strategy: 'set',
-  setRatio: 100,
 };
 
 const YOMI_DEF = [
@@ -398,27 +361,6 @@ const yen = v  => Math.round(v).toLocaleString('ja-JP') + '円';
 // ── STATE SETTERS ──
 function sg(k, v)   { ST.goal[k] = v; update(); }
 function setWeeks(v){ ST.weeksLeft = +v || 1; $('slVal').textContent = v; update(); }
-function setStrategy(s) {
-  ST.strategy = s;
-  $('strat-set').classList.toggle('selected', s === 'set');
-  $('strat-split').classList.toggle('selected', s === 'split');
-  updRatioLabels();
-  update();
-}
-function setRatio(v) {
-  ST.setRatio = Math.min(100, Math.max(0, +v || 0));
-  $('ratioSlider').value = ST.setRatio;
-  updRatioSlider();
-  updRatioLabels();
-  update();
-}
-function syncRatio(v) {
-  ST.setRatio = +v;
-  $('ratioInput').value = v;
-  updRatioSlider();
-  updRatioLabels();
-  update();
-}
 function setActiveType(t) {
   ST.activeType = t;
   document.querySelectorAll('.type-tabs .tt').forEach((btn, i) => {
@@ -437,23 +379,6 @@ function setYomi(type, key, val) {
   updArpu();
 }
 
-function updRatioSlider() {
-  const r = ST.setRatio;
-  $('ratioSlider').style.background = `linear-gradient(to right,#1a1a1a 0%,#1a1a1a ${r}%,#E0E0E0 ${r}%,#E0E0E0 100%)`;
-}
-function updRatioLabels() {
-  const r = ST.setRatio;
-  if (ST.strategy === 'set') {
-    $('ratioLabel').textContent = '🏠 セットで当たる割合';
-    $('ratioLeft').textContent  = `🏠 セット ${r}%`;
-    $('ratioRight').textContent = `🏠 NET単独 ${100-r}%`;
-  } else {
-    $('ratioLabel').textContent = '🏠 白地NETで当たる割合';
-    $('ratioLeft').textContent  = `🏠 白地NET ${r}%`;
-    $('ratioRight').textContent = `📱 ネット利用PR ${100-r}%`;
-  }
-}
-
 // ── CALCULATIONS ──
 function calcLanding(yomiType) {
   return YOMI_DEF.reduce((s, d) => s + nv(yomiType[d.key]) * d.rate, 0);
@@ -464,10 +389,12 @@ function calcType(typeKey, cntKey, rateKey) {
   const rate    = nv(ST.goal[rateKey]) / 100;
   const landing = calcLanding(ST.yomi[typeKey]);
   const diff    = Math.max(0, goalCnt - landing);
+  const inNeg   = ['zumi','a','b','c','d'].reduce((s, k) => s + nv(ST.yomi[typeKey][k]), 0);
+  const mis     = nv(ST.yomi[typeKey].mis);
   const newOpps = rate > 0 ? cl(diff / rate) : (diff > 0 ? 999 : 0);
   const weekly  = cl(newOpps / Math.max(1, ST.weeksLeft));
   const pct     = goalCnt > 0 ? Math.min(100, (landing / goalCnt) * 100) : 0;
-  return { goalCnt, rate, landing, diff, newOpps, weekly, pct };
+  return { goalCnt, rate, landing, diff, inNeg, mis, newOpps, weekly, pct };
 }
 
 function calcAll() {
@@ -484,93 +411,25 @@ function calcAll() {
   const landRev  = pr.landing * prArpu + sw.landing * swArpu;
   const revPct   = goalRev > 0 ? Math.min(100, (landRev / goalRev) * 100) : 0;
 
-  // 全種別合算
-  const totalGoalCnt = pr.goalCnt + net.goalCnt + sw.goalCnt;
-  const totalLanding = pr.landing + net.landing + sw.landing;
-  const totalDiff    = Math.max(0, totalGoalCnt - totalLanding);
-  const weightedRate = totalGoalCnt > 0
-    ? (pr.goalCnt * pr.rate + net.goalCnt * net.rate + sw.goalCnt * sw.rate) / totalGoalCnt
-    : 0.2;
+  // 進行中から商談行く件数（手打ち優先、なければ各タイプの済+A+B+C+D 合計）
+  const inNegCalc = pr.inNeg + net.inNeg + sw.inNeg;
+  const inNeg     = ST.inNegManual !== null ? ST.inNegManual : inNegCalc;
+  const totalMis  = pr.mis + net.mis + sw.mis;
 
-  // 進行中から商談行く件数（手打ち優先、なければ済+A+B+C+D の合計）
-  const inNegCalc = ['pr','net','sw'].reduce((s, t) =>
-    s + ['zumi','a','b','c','d'].reduce((ss, k) => ss + nv(ST.yomi[t][k]), 0), 0);
-  const inNeg = ST.inNegManual !== null ? ST.inNegManual : inNegCalc;
-  const totalMis = ['pr','net','sw'].reduce((s, t) => s + nv(ST.yomi[t].mis), 0);
-
-  // 残商談・月間商談数
-  const newMeetings     = weightedRate > 0 ? cl(totalDiff / weightedRate) : 0;
+  // タイプ別に必要未商談を積み上げて月間商談数を算出
+  const newMeetings     = pr.newOpps + net.newOpps + sw.newOpps;
   const monthlyMeetings = inNeg + newMeetings;
 
-  // 行動数（不足商談数がそのまま新規行動数、未商談はフォロー行動）
-  const newActions   = newMeetings;
-  const followActs   = totalMis;
-  const totalActions = newActions + followActs;
-  const weeklyActions= cl(totalActions / wk);
+  // 行動数（必要未商談数 ＋ フォロー行動）
+  const newActions    = newMeetings;
+  const followActs    = totalMis;
+  const totalActions  = newActions + followActs;
+  const weeklyActions = cl(totalActions / wk);
 
   return { pr, net, sw, wk, prArpu, swArpu, prArpuBudget, swArpuBudget,
            goalRev, landRev, revPct,
-           totalGoalCnt, totalLanding, totalDiff, weightedRate,
            inNeg, inNegCalc, totalMis, newMeetings, monthlyMeetings,
            newActions, followActs, totalActions, weeklyActions };
-}
-
-function calcSeg(c) {
-  const { pr, net, sw, wk } = c;
-  const ratio = Math.min(100, Math.max(0, ST.setRatio)) / 100;
-  let segments = [];
-
-  if (ST.strategy === 'set') {
-    const setMeets      = cl(Math.max(pr.newOpps, net.newOpps) * ratio);
-    const setWeekly     = cl(setMeets / wk);
-    const soloNetMeets  = cl(net.newOpps * (1 - ratio));
-    const soloNetWeekly = cl(soloNetMeets / wk);
-    const swWeekly      = cl(sw.newOpps / wk);
-    const total         = setMeets + soloNetMeets + sw.newOpps;
-    const totalWeekly   = setWeekly + soloNetWeekly + swWeekly;
-
-    if ((ST.goal.pr_cnt || ST.goal.net_cnt) && setMeets > 0) segments.push({
-      icon:'🏠', iconCls:'seg-icon-white', name:'白地（PR＋NETセット）',
-      target:`セット ${Math.round(ratio*100)}% ／ PR＋NET同時獲得`,
-      opps:setMeets, weekly:setWeekly,
-    });
-    if (ST.goal.net_cnt && soloNetMeets > 0) segments.push({
-      icon:'🏠', iconCls:'seg-icon-white', name:'白地（NET単独）',
-      target:`残り ${Math.round((1-ratio)*100)}% ／ NET専用`,
-      opps:soloNetMeets, weekly:soloNetWeekly,
-    });
-    if (ST.goal.sw_cnt) segments.push({
-      icon:'🔄', iconCls:'seg-icon-sw', name:'切替対象',
-      target:`切替 ${cl(sw.diff)}件獲得`,
-      opps:sw.newOpps, weekly:swWeekly,
-    });
-    return { segments, total, totalWeekly };
-  } else {
-    const wNetMeets  = cl(net.newOpps * ratio);
-    const wNetWeekly = cl(wNetMeets / wk);
-    const nPrMeets   = cl(pr.newOpps * (1 - ratio));
-    const nPrWeekly  = cl(nPrMeets / wk);
-    const swWeekly   = cl(sw.newOpps / wk);
-    const total      = wNetMeets + nPrMeets + sw.newOpps;
-    const totalWeekly= wNetWeekly + nPrWeekly + swWeekly;
-
-    if (ST.goal.net_cnt && wNetMeets > 0) segments.push({
-      icon:'🏠', iconCls:'seg-icon-white', name:'白地（NET専用）',
-      target:`白地 ${Math.round(ratio*100)}% ／ NET ${cl(net.diff)}件獲得`,
-      opps:wNetMeets, weekly:wNetWeekly,
-    });
-    if (ST.goal.pr_cnt && nPrMeets > 0) segments.push({
-      icon:'📱', iconCls:'seg-icon-net', name:'ネット利用中（PR専用）',
-      target:`ネット利用 ${Math.round((1-ratio)*100)}% ／ PR ${cl(pr.diff)}件獲得`,
-      opps:nPrMeets, weekly:nPrWeekly,
-    });
-    if (ST.goal.sw_cnt) segments.push({
-      icon:'🔄', iconCls:'seg-icon-sw', name:'切替対象',
-      target:`切替 ${cl(sw.diff)}件獲得`,
-      opps:sw.newOpps, weekly:swWeekly,
-    });
-    return { segments, total, totalWeekly };
-  }
 }
 
 // ── RENDER: ARPU & 売上 ──
@@ -628,41 +487,55 @@ function renderYomiCard() {
 // ── RENDER: CALC BLOCK (Tab 2) ──
 function renderCalcBlock() {
   const c = calcAll();
-  const { inNeg, inNegCalc, totalLanding, totalGoalCnt, totalDiff, weightedRate, newMeetings, monthlyMeetings, totalMis } = c;
-  const shortageOk = totalDiff <= 0;
-  const wRatePct = Math.round(weightedRate * 100);
+  const { pr, net, sw, inNeg, inNegCalc, newMeetings, monthlyMeetings } = c;
+
+  const typeDefs = [
+    { label:'PR',  t:pr,  ratePct:nv(ST.goal.pr_rate),  pillCls:'pill-pr'  },
+    { label:'NET', t:net, ratePct:nv(ST.goal.net_rate), pillCls:'pill-net' },
+    { label:'切替', t:sw, ratePct:nv(ST.goal.sw_rate),  pillCls:'pill-sw'  },
+  ].filter(x => x.t.goalCnt > 0);
+
+  if (!typeDefs.length) { $('calcBlock').innerHTML = ''; return; }
+
   const inNegHint = ST.inNegManual !== null
     ? `<span style="font-size:10px;color:var(--wa);margin-left:6px">手打ち（ヨミ自動:${inNegCalc}件）</span>`
     : `<span style="font-size:10px;color:var(--mu);margin-left:6px">ヨミ自動計算</span>`;
 
+  const typeBlocks = typeDefs.map(({ label, t, ratePct, pillCls }) => {
+    const shortageOk = t.diff <= 0;
+    return `
+      <div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;border:2px solid var(--bdr2)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span class="pill ${pillCls}">${label}</span>
+          <span style="font-size:11px;font-weight:800;color:var(--mu)">目標 ${t.goalCnt}件</span>
+          <span style="font-size:11px;color:var(--mu);margin-left:auto">進行中商談: <strong style="color:var(--tx)">${t.inNeg}</strong>件</span>
+        </div>
+        <div class="cb-row">
+          <span class="cb-label">着地ヨミ（期待値）</span>
+          <span class="cb-val">${f1(t.landing)} 件</span>
+        </div>
+        <hr class="bk-hdiv">
+        <div class="cb-row">
+          <strong class="cb-label">不足分</strong>
+          <strong class="${shortageOk ? 'cb-shortage-ok' : 'cb-shortage-ng'}">${shortageOk ? '0件（達成見込み ✅）' : f1(t.diff) + ' 件'}</strong>
+        </div>
+        ${!shortageOk && ratePct > 0 ? `
+        <div class="cb-row" style="margin-top:4px">
+          <span style="font-size:11px;color:var(--mu);font-family:var(--fm)">不足${f1(t.diff)}件 ÷ 受注率${ratePct}%</span>
+          <span class="cb-meet-needed">= ${t.newOpps}件 必要（未商談）</span>
+        </div>` : ''}
+      </div>`;
+  }).join('');
+
   $('calcBlock').innerHTML = `
     <div class="calc-blk">
-      <div class="calc-blk-hd">進行中から逆算（全種別合計）</div>
+      <div class="calc-blk-hd">進行中から逆算（タイプ別）</div>
       <div class="calc-blk-body">
-
         <div class="cb-spotlight">
           <span>進行中から何件商談行くか${inNegHint}</span>
           <strong>${inNeg} 件</strong>
         </div>
-
-        <div class="cb-row"><span class="cb-label">進行中 着地ヨミ（期待値）</span><span class="cb-val">${f1(totalLanding)} 件</span></div>
-        <div class="cb-row"><span class="cb-label">合計目標件数</span><span class="cb-val">${totalGoalCnt} 件</span></div>
-        <hr class="bk-hdiv">
-        <div class="cb-row">
-          <strong class="cb-label">不足分</strong>
-          <strong class="${shortageOk ? 'cb-shortage-ok' : 'cb-shortage-ng'}">${shortageOk ? '0件（達成見込み ✅）' : f1(totalDiff) + ' 件'}</strong>
-        </div>
-
-        <hr class="bk-hdiv">
-
-        <div class="cb-row">
-          <span class="cb-label">不足 ${f1(totalDiff)}件 ÷ 受注率 ${wRatePct}%</span>
-          <span class="cb-meet-needed">${newMeetings} 件 必要</span>
-        </div>
-        <div style="font-size:11px;color:rgba(0,0,0,.35);padding:2px 0 4px;font-family:var(--fm)">↑ 未商談として新たに組む商談</div>
-
-        <hr class="bk-hdiv">
-
+        ${typeBlocks}
         <div class="cb-monthly">
           <div>
             <div class="cb-monthly-lbl">月間 商談数</div>
@@ -676,8 +549,7 @@ function renderCalcBlock() {
 
 // ── RENDER: RESULT TAB ──
 function renderResultTab() {
-  const c   = calcAll();
-  const seg = calcSeg(c);
+  const c = calcAll();
   const hasGoal = ST.goal.pr_cnt || ST.goal.net_cnt || ST.goal.sw_cnt;
 
   if (!hasGoal) {
@@ -734,35 +606,15 @@ function renderResultTab() {
 
   const progHtml = typePb ? `<div class="card">${typePb}</div>` : '';
 
-  // Segments
-  const segRows = seg.segments.map(s => `
-    <div class="seg-row">
-      <div class="seg-icon ${s.iconCls}">${s.icon}</div>
-      <div class="seg-body">
-        <div class="seg-name">${s.name}</div>
-        <div class="seg-target">${s.target}</div>
-      </div>
-      <div class="seg-num">
-        <div class="seg-cnt">${s.opps}<span style="font-size:13px;font-weight:400;margin-left:2px">件</span></div>
-        <div class="seg-week">週 ${s.weekly} 件</div>
-      </div>
-    </div>`).join('');
-
-  const segHtml = seg.segments.length ? `
-    <div class="card">
-      <div class="card-ttl">セグメント別 必要商談数</div>
-      <div class="seg-grid">${segRows}</div>
-    </div>` : '';
-
   // Yomi Tower
   const towerHtml = renderTower(c);
 
   // Week plan
-  const wkHtml = renderWeekPlan(c, seg);
+  const wkHtml = renderWeekPlan(c);
 
   $('tab-result').innerHTML = `
     <div class="al ${alCls}">${alMsg}</div>
-    ${heroHtml}${rc3Html}${progHtml}${segHtml}${towerHtml}${wkHtml}`;
+    ${heroHtml}${rc3Html}${progHtml}${towerHtml}${wkHtml}`;
 }
 
 // ── TOWER ──
@@ -858,7 +710,7 @@ function renderTower(c) {
 }
 
 // ── WEEK PLAN ──
-function renderWeekPlan(c, seg) {
+function renderWeekPlan(c) {
   if (c.weeklyActions === 0) return '';
   const { wk, newActions, followActs, monthlyMeetings } = c;
   const newPerWk  = cl(newActions / wk);
@@ -915,8 +767,6 @@ function update() {
 (function init() {
   const now = new Date();
   $('monthTag').textContent = `${now.getFullYear()}年${now.getMonth()+1}月`;
-  updRatioSlider();
-  updRatioLabels();
   renderYomiCard();
   renderCalcBlock();
 })();
