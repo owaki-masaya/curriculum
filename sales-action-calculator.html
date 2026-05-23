@@ -202,17 +202,76 @@ body{background:#fff;}
 .seg-cnt{font-family:var(--fm);font-size:24px;font-weight:700;color:#1a1a1a;line-height:1;}
 .seg-unit{font-size:11px;color:var(--mu);font-weight:700;}
 .seg-week{font-family:var(--fm);font-size:11px;color:var(--mu);margin-top:2px;}
+/* ── Login ── */
+.login-overlay{position:fixed;inset:0;background:#fff;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;}
+.login-box{width:100%;max-width:400px;}
+.login-logo{font-size:clamp(22px,4vw,30px);font-weight:900;color:#1a1a1a;margin-bottom:8px;}
+.login-logo mark{background:var(--y);color:#1a1a1a;border-radius:6px;padding:1px 7px;font-style:normal;}
+.login-sub{font-size:13px;color:var(--mu);font-weight:700;margin-bottom:28px;line-height:1.6;}
+.login-input{width:100%;border:2.5px solid var(--bdr2);border-radius:14px;padding:15px 16px;font-family:var(--fm);font-size:20px;font-weight:700;color:var(--tx);background:#FAFAFA;outline:none;transition:border-color .15s,box-shadow .15s;margin-bottom:12px;display:block;}
+.login-input:focus{border-color:var(--y);box-shadow:0 0 0 3px rgba(255,214,0,.25);}
+.login-btn{width:100%;padding:16px;border-radius:14px;font-size:15px;font-weight:900;cursor:pointer;border:none;background:var(--y);color:#1a1a1a;font-family:var(--ff);box-shadow:0 4px 18px rgba(255,214,0,.45);transition:transform .15s;margin-bottom:28px;display:block;}
+.login-btn:hover{transform:translateY(-2px);}
+.login-members-lbl{font-size:11px;font-weight:900;color:var(--mu);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;}
+.user-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.user-chip{padding:9px 18px;border-radius:20px;font-size:13px;font-weight:800;cursor:pointer;border:2px solid var(--bdr2);background:#FAFAFA;color:var(--tx);font-family:var(--ff);transition:all .15s;}
+.user-chip:hover{border-color:var(--yd);background:var(--yl);}
+/* ── User Badge ── */
+.ubw{position:absolute;top:18px;right:20px;z-index:10;}
+.ub{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.9);border-radius:20px;padding:6px 12px 6px 8px;cursor:pointer;border:2px solid rgba(0,0,0,.1);transition:background .15s;user-select:none;}
+.ub:hover{background:#fff;}
+.ub-av{width:26px;height:26px;border-radius:50%;background:#1a1a1a;color:var(--y);font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ub-nm{font-size:13px;font-weight:900;color:#1a1a1a;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ub-cr{font-size:9px;color:var(--mu);}
+/* ── User Dropdown ── */
+.udrop{position:absolute;top:calc(100% + 8px);right:0;background:#fff;border-radius:16px;border:2px solid var(--bdr2);box-shadow:0 8px 32px rgba(0,0,0,.12);min-width:190px;padding:8px;z-index:200;display:none;}
+.udrop.open{display:block;}
+.udrop-sec{font-size:10px;font-weight:900;color:var(--mu);letter-spacing:.1em;text-transform:uppercase;padding:6px 10px 4px;}
+.ud-item{padding:10px 12px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:800;color:var(--tx);transition:background .1s;display:flex;align-items:center;gap:8px;}
+.ud-item:hover{background:#F5F5F5;}
+.ud-item.cur{background:var(--yl);}
+.ud-av{width:22px;height:22px;border-radius:50%;background:#1a1a1a;color:var(--y);font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ud-div{height:1px;background:var(--bdr);margin:6px 4px;}
+.ud-lo{color:var(--ng) !important;}
 </style>
 </head>
 <body>
+<!-- LOGIN OVERLAY -->
+<div id="loginOverlay" class="login-overlay">
+  <div class="login-box">
+    <div class="login-logo">月次計画<mark>逆算</mark>ツール</div>
+    <div class="login-sub">名前を入力してログイン<br>同じ名前で再ログインすると前回データが復元されます</div>
+    <input id="loginNameInput" class="login-input" type="text" placeholder="例: 田中" maxlength="20"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">ログイン / 登録</button>
+    <div id="existingUsersSection" style="display:none">
+      <div class="login-members-lbl">登録済みメンバー（タップでログイン）</div>
+      <div id="userChips" class="user-chips"></div>
+    </div>
+  </div>
+</div>
 <div class="app">
 <div class="wrap">
 
 <!-- HEADER -->
-<div class="hd">
+<div class="hd" style="position:relative">
   <h1>月次計画<mark>逆算</mark>ツール</h1>
   <p>目標 − ヨミ着地 ＝ 差分 → 必要行動数を自動算出</p>
   <div class="month-tag" id="monthTag">—</div>
+  <!-- User Badge -->
+  <div class="ubw" id="userBadgeWrap" style="display:none">
+    <div class="ub" onclick="toggleUserMenu()">
+      <div class="ub-av" id="userBadgeAv">?</div>
+      <span class="ub-nm" id="userBadgeNm">—</span>
+      <span class="ub-cr">▾</span>
+    </div>
+    <div class="udrop" id="userDrop">
+      <div class="udrop-sec">メンバー切替</div>
+      <div id="userDropItems"></div>
+      <div class="ud-div"></div>
+      <div class="ud-item ud-lo" onclick="logout()">ログアウト</div>
+    </div>
+  </div>
 </div>
 
 <!-- TABS -->
@@ -229,16 +288,16 @@ body{background:#fff;}
   <div class="card">
     <div class="card-ttl"><span class="pill pill-pr">PR</span>新規PR 目標</div>
     <div class="fg fg2" style="margin-bottom:12px">
-      <div class="f"><label>PR件数目標</label><input type="number" placeholder="例: 5" onchange="sg('pr_cnt',this.value)"></div>
-      <div class="f"><label>新規売上目標（円）</label><input type="number" placeholder="例: 125000" onchange="sg('pr_rev',this.value);updArpu()"></div>
+      <div class="f"><label>PR件数目標</label><input id="inp-pr-cnt" type="number" placeholder="例: 5" onchange="sg('pr_cnt',this.value)"></div>
+      <div class="f"><label>新規売上目標（円）</label><input id="inp-pr-rev" type="number" placeholder="例: 125000" onchange="sg('pr_rev',this.value);updArpu()"></div>
     </div>
     <div class="arpu-box" style="margin-bottom:12px">
       <span class="arpu-label">予算ARPU（新規売上 ÷ 件数）</span>
       <span class="arpu-val" id="prArpuBudget">—</span>
     </div>
     <div class="fg fg2">
-      <div class="f"><label>平均受注率（%）</label><input type="number" placeholder="例: 15" onchange="sg('pr_rate',this.value)"></div>
-      <div class="f"><label>想定ARPU（円）</label><input type="number" placeholder="例: 17500" onchange="sg('pr_arpu_est',this.value);updArpu()"></div>
+      <div class="f"><label>平均受注率（%）</label><input id="inp-pr-rate" type="number" placeholder="例: 15" onchange="sg('pr_rate',this.value)"></div>
+      <div class="f"><label>想定ARPU（円）</label><input id="inp-pr-arpu" type="number" placeholder="例: 17500" onchange="sg('pr_arpu_est',this.value);updArpu()"></div>
     </div>
   </div>
 
@@ -246,8 +305,8 @@ body{background:#fff;}
   <div class="card">
     <div class="card-ttl"><span class="pill pill-net">NET</span>ネット予約 目標</div>
     <div class="fg fg2">
-      <div class="f"><label>ネット件数目標</label><input type="number" placeholder="例: 3" onchange="sg('net_cnt',this.value)"></div>
-      <div class="f"><label>平均受注率（%）</label><input type="number" placeholder="例: 50" onchange="sg('net_rate',this.value)"></div>
+      <div class="f"><label>ネット件数目標</label><input id="inp-net-cnt" type="number" placeholder="例: 3" onchange="sg('net_cnt',this.value)"></div>
+      <div class="f"><label>平均受注率（%）</label><input id="inp-net-rate" type="number" placeholder="例: 50" onchange="sg('net_rate',this.value)"></div>
     </div>
   </div>
 
@@ -264,16 +323,16 @@ body{background:#fff;}
   <div class="card">
     <div class="card-ttl"><span class="pill pill-sw">切替</span>切替アップセル 目標</div>
     <div class="fg fg2" style="margin-bottom:12px">
-      <div class="f"><label>切替件数目標</label><input type="number" placeholder="例: 3" onchange="sg('sw_cnt',this.value)"></div>
-      <div class="f"><label>切替売上目標（円）</label><input type="number" placeholder="例: 45000" onchange="sg('sw_rev',this.value);updArpu()"></div>
+      <div class="f"><label>切替件数目標</label><input id="inp-sw-cnt" type="number" placeholder="例: 3" onchange="sg('sw_cnt',this.value)"></div>
+      <div class="f"><label>切替売上目標（円）</label><input id="inp-sw-rev" type="number" placeholder="例: 45000" onchange="sg('sw_rev',this.value);updArpu()"></div>
     </div>
     <div class="arpu-box" style="margin-bottom:12px">
       <span class="arpu-label">予算ARPU（切替売上 ÷ 件数）</span>
       <span class="arpu-val" id="swArpuBudget">—</span>
     </div>
     <div class="fg fg2">
-      <div class="f"><label>平均受注率（%）</label><input type="number" placeholder="例: 40" onchange="sg('sw_rate',this.value)"></div>
-      <div class="f"><label>想定ARPU（円）</label><input type="number" placeholder="例: 12000" onchange="sg('sw_arpu_est',this.value);updArpu()"></div>
+      <div class="f"><label>平均受注率（%）</label><input id="inp-sw-rate" type="number" placeholder="例: 40" onchange="sg('sw_rate',this.value)"></div>
+      <div class="f"><label>想定ARPU（円）</label><input id="inp-sw-arpu" type="number" placeholder="例: 12000" onchange="sg('sw_arpu_est',this.value);updArpu()"></div>
     </div>
   </div>
 
@@ -936,6 +995,154 @@ function renderWeekPlan(c) {
     </div>`;
 }
 
+// ── USER PERSISTENCE ──
+const LS_KEY = 'sac_v2';
+let currentUser = null;
+
+const EMPTY_GOAL = { pr_cnt:'', pr_rev:'', pr_rate:'', pr_arpu_est:'', net_cnt:'', net_rate:'', sw_cnt:'', sw_rev:'', sw_rate:'', sw_arpu_est:'' };
+const EMPTY_YOMI = () => ({ pr:{zumi:'',a:'',b:'',c:'',d:'',mis:''}, net:{zumi:'',a:'',b:'',c:'',d:'',mis:''}, sw:{zumi:'',a:'',b:'',c:'',d:'',mis:''} });
+
+function loadStore() { try { return JSON.parse(localStorage.getItem(LS_KEY) || '{"users":{}}'); } catch(e) { return {users:{}}; } }
+function saveStore(s) { try { localStorage.setItem(LS_KEY, JSON.stringify(s)); } catch(e) {} }
+
+function getUserData() {
+  return {
+    goal:        JSON.parse(JSON.stringify(ST.goal)),
+    yomi:        JSON.parse(JSON.stringify(ST.yomi)),
+    inNegManual: ST.inNegManual,
+    weeksLeft:   ST.weeksLeft,
+    misTarget:   JSON.parse(JSON.stringify(ST.misTarget)),
+  };
+}
+
+function applyUserData(data) {
+  ST.goal        = Object.assign({...EMPTY_GOAL}, data.goal || {});
+  ST.yomi        = data.yomi ? JSON.parse(JSON.stringify(data.yomi)) : EMPTY_YOMI();
+  ST.inNegManual = (data.inNegManual !== undefined) ? data.inNegManual : null;
+  ST.weeksLeft   = data.weeksLeft || 3;
+  ST.misTarget   = Object.assign({pr:'',net:'',sw:''}, data.misTarget || {});
+}
+
+function saveCurrentUser() {
+  if (!currentUser) return;
+  const s = loadStore();
+  if (!s.users) s.users = {};
+  s.users[currentUser] = getUserData();
+  s.currentUser = currentUser;
+  saveStore(s);
+}
+
+function loginUser(name) {
+  const n = (name || '').trim();
+  if (!n) return;
+  const s = loadStore();
+  if (s.users && s.users[n]) {
+    applyUserData(s.users[n]);
+  } else {
+    applyUserData({});
+    const s2 = loadStore();
+    if (!s2.users) s2.users = {};
+    s2.users[n] = getUserData();
+    s2.currentUser = n;
+    saveStore(s2);
+  }
+  currentUser = n;
+  saveCurrentUser();
+  showApp();
+}
+
+function doLogin() {
+  const name = $('loginNameInput').value.trim();
+  if (!name) { $('loginNameInput').focus(); return; }
+  loginUser(name);
+  restoreInputs();
+  update();
+}
+
+function switchUser(name) {
+  saveCurrentUser();
+  loginUser(name);
+  restoreInputs();
+  update();
+  closeUserDrop();
+}
+
+function logout() {
+  saveCurrentUser();
+  currentUser = null;
+  const s = loadStore();
+  delete s.currentUser;
+  saveStore(s);
+  closeUserDrop();
+  showLoginScreen();
+}
+
+function showApp() {
+  $('loginOverlay').style.display = 'none';
+  $('userBadgeWrap').style.display = '';
+  $('userBadgeNm').textContent = currentUser;
+  $('userBadgeAv').textContent = currentUser.charAt(0).toUpperCase();
+  renderUserDrop();
+}
+
+function showLoginScreen() {
+  $('loginOverlay').style.display = 'flex';
+  $('userBadgeWrap').style.display = 'none';
+  $('loginNameInput').value = '';
+  renderUserChips();
+}
+
+function renderUserChips() {
+  const s = loadStore();
+  const names = Object.keys(s.users || {});
+  const sec = $('existingUsersSection');
+  if (!names.length) { sec.style.display = 'none'; return; }
+  sec.style.display = '';
+  $('userChips').innerHTML = names.map(n =>
+    `<div class="user-chip" onclick="document.getElementById('loginNameInput').value='${n.replace(/'/g,"\\'")}';doLogin()">${n}</div>`
+  ).join('');
+}
+
+function renderUserDrop() {
+  const s = loadStore();
+  const names = Object.keys(s.users || {});
+  $('userDropItems').innerHTML = names.map(n => `
+    <div class="ud-item${n===currentUser?' cur':''}" onclick="switchUser('${n.replace(/'/g,"\\'")}')">
+      <div class="ud-av">${n.charAt(0).toUpperCase()}</div>
+      <span>${n}</span>${n===currentUser?' <span style="margin-left:auto;font-size:10px;color:var(--ok)">✓</span>':''}
+    </div>`).join('');
+}
+
+function toggleUserMenu() { $('userDrop').classList.toggle('open'); }
+function closeUserDrop()  { $('userDrop').classList.remove('open'); }
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.ubw')) closeUserDrop();
+});
+
+function restoreInputs() {
+  const g = ST.goal;
+  const sv = (id, v) => { const el = $(id); if (el) el.value = (v !== '' && v != null) ? v : ''; };
+  sv('inp-pr-cnt',  g.pr_cnt);
+  sv('inp-pr-rev',  g.pr_rev);
+  sv('inp-pr-rate', g.pr_rate);
+  sv('inp-pr-arpu', g.pr_arpu_est);
+  sv('inp-net-cnt', g.net_cnt);
+  sv('inp-net-rate',g.net_rate);
+  sv('inp-sw-cnt',  g.sw_cnt);
+  sv('inp-sw-rev',  g.sw_rev);
+  sv('inp-sw-rate', g.sw_rate);
+  sv('inp-sw-arpu', g.sw_arpu_est);
+  const sl = document.querySelector('.sl-row input[type=range]');
+  if (sl) {
+    sl.value = ST.weeksLeft;
+    sl.style.setProperty('--fill', ((ST.weeksLeft-1)/3*100).toFixed(1)+'%');
+    $('slVal').textContent = ST.weeksLeft;
+  }
+  const ine = $('inNegInput');
+  if (ine) ine.value = (ST.inNegManual !== null) ? ST.inNegManual : '';
+}
+
 // ── TAB SWITCH ──
 function switchTab(t) {
   ST.tab = t;
@@ -954,12 +1161,20 @@ function update() {
   updArpu();
   if (ST.tab === 'yomi')   { renderYomiCard(); renderCalcBlock(); }
   if (ST.tab === 'result') renderResultTab();
+  saveCurrentUser();
 }
 
 // ── INIT ──
 (function init() {
   const now = new Date();
   $('monthTag').textContent = `${now.getFullYear()}年${now.getMonth()+1}月`;
+  const s = loadStore();
+  if (s.currentUser && s.users && s.users[s.currentUser]) {
+    loginUser(s.currentUser);
+    restoreInputs();
+  } else {
+    showLoginScreen();
+  }
   renderYomiCard();
   renderCalcBlock();
 })();
