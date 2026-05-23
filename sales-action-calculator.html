@@ -10,187 +10,153 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
   --y:#FFD600;--yd:#E6C200;--yl:#FFF9C4;--yll:#FFFDE7;
-  --tx:#1a1a1a;--mu:#888;--bg:#F8F8F8;
+  --tx:#1a1a1a;--mu:#888;--bg:#F4F4F6;
   --bdr:#EBEBEB;--bdr2:#E0E0E0;
   --ok:#16a34a;--wa:#d97706;--ng:#dc2626;
-  --blue:#2563EB;--cyan:#0891b2;--violet:#7c3aed;
+  --pr:#2563EB;--net:#0891b2;--rev:#16a34a;--sw:#7c3aed;
+  --pr-l:#DBEAFE;--net-l:#CFFAFE;--rev-l:#DCFCE7;--sw-l:#EDE9FE;
   --ff:'Nunito',sans-serif;--fm:'JetBrains Mono',monospace;
-  --sh:0 1px 4px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.04);
-  --sh-y:0 4px 20px rgba(255,214,0,.35);
+  --sh:0 1px 3px rgba(0,0,0,.07),0 4px 12px rgba(0,0,0,.04);
+  --sh-y:0 4px 20px rgba(255,214,0,.3);
 }
 html{scroll-behavior:smooth;}
 body{font-family:var(--ff);background:var(--bg);color:var(--tx);min-height:100vh;}
 
 /* ── HEADER ── */
-.hd{
-  background:var(--y);padding:32px 24px 28px;
-  position:relative;overflow:hidden;
-}
-.hd::before,.hd::after{
-  content:'';position:absolute;border-radius:50%;
-  background:rgba(255,255,255,.18);
-}
-.hd::before{width:200px;height:200px;right:-50px;top:-60px;}
-.hd::after{width:110px;height:110px;right:80px;bottom:-40px;background:rgba(255,255,255,.1);}
-.hd-inner{max-width:960px;margin:0 auto;position:relative;}
-.hd h1{font-size:clamp(20px,5vw,30px);font-weight:900;letter-spacing:-.02em;line-height:1.1;color:#1a1a1a;}
-.hd h1 mark{background:#1a1a1a;color:var(--y);border-radius:6px;padding:1px 8px;font-style:normal;}
-.hd p{margin-top:6px;font-size:12px;color:rgba(26,26,26,.65);font-weight:800;}
-.hd-badge{
-  display:inline-block;margin-top:14px;background:#1a1a1a;color:var(--y);
-  font-family:var(--fm);font-size:11px;font-weight:700;
-  border-radius:8px;padding:5px 14px;
-}
+.hd{background:var(--y);padding:28px 24px 24px;position:relative;overflow:hidden;}
+.hd::before,.hd::after{content:'';position:absolute;border-radius:50%;background:rgba(255,255,255,.18);}
+.hd::before{width:200px;height:200px;right:-40px;top:-50px;}
+.hd::after{width:100px;height:100px;right:90px;bottom:-35px;background:rgba(255,255,255,.1);}
+.hd-inner{max-width:1000px;margin:0 auto;position:relative;}
+.hd h1{font-size:clamp(18px,4vw,26px);font-weight:900;letter-spacing:-.02em;line-height:1.1;}
+.hd h1 mark{background:#1a1a1a;color:var(--y);border-radius:5px;padding:1px 7px;font-style:normal;}
+.hd p{margin-top:5px;font-size:11px;color:rgba(26,26,26,.65);font-weight:800;}
+.hd-badge{display:inline-block;margin-top:12px;background:#1a1a1a;color:var(--y);font-family:var(--fm);font-size:11px;font-weight:700;border-radius:7px;padding:4px 12px;}
 
 /* ── LAYOUT ── */
-.wrap{max-width:960px;margin:0 auto;padding:24px 16px 80px;}
-.cols{display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:start;}
-@media(max-width:720px){.cols{grid-template-columns:1fr;}}
+.wrap{max-width:1000px;margin:0 auto;padding:20px 14px 80px;}
+.cols{display:grid;grid-template-columns:370px 1fr;gap:16px;align-items:start;}
+@media(max-width:740px){.cols{grid-template-columns:1fr;}}
 
 /* ── CARD ── */
-.card{background:#fff;border:2px solid var(--bdr);border-radius:18px;padding:22px;box-shadow:var(--sh);}
-.card+.card{margin-top:14px;}
-.card-ttl{
-  font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--mu);margin-bottom:18px;display:flex;align-items:center;gap:8px;
-}
+.card{background:#fff;border:2px solid var(--bdr);border-radius:16px;padding:20px;box-shadow:var(--sh);}
+.card+.card{margin-top:12px;}
+.card-ttl{font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
 .card-ttl::after{content:'';flex:1;height:2px;background:var(--bdr);border-radius:2px;}
 
+/* ── TYPE SECTIONS ── */
+.type-sec{padding:12px 0 14px;border-bottom:1px solid var(--bdr);}
+.type-sec:last-of-type{border-bottom:none;padding-bottom:0;}
+.type-hd{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.type-name{font-size:11px;font-weight:900;color:var(--mu);}
+
+/* ── PILL ── */
+.pill{display:inline-flex;align-items:center;padding:2px 10px;border-radius:20px;font-size:10px;font-weight:900;letter-spacing:.03em;}
+.pill-pr {background:var(--pr-l);color:var(--pr);}
+.pill-net{background:var(--net-l);color:var(--net);}
+.pill-rev{background:var(--rev-l);color:var(--rev);}
+.pill-sw {background:var(--sw-l);color:var(--sw);}
+
+/* ── FIELD GRIDS ── */
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+
 /* ── FIELD ── */
-.field{margin-bottom:13px;}
-.field:last-child{margin-bottom:0;}
-.field label{
-  display:block;font-size:10px;font-weight:900;color:var(--mu);
-  margin-bottom:5px;letter-spacing:.06em;text-transform:uppercase;
-}
-.iw{
-  display:flex;align-items:center;
-  border:2px solid var(--bdr2);border-radius:10px;
-  background:#FAFAFA;overflow:hidden;
-  transition:border-color .15s,background .15s,box-shadow .15s;
-}
-.iw:focus-within{border-color:var(--y);background:#fff;box-shadow:0 0 0 3px rgba(255,214,0,.22);}
-.iw input{
-  flex:1;border:none;outline:none;padding:10px 12px;
-  font-family:var(--fm);font-size:15px;font-weight:700;color:var(--tx);background:transparent;
-  -moz-appearance:textfield;
-}
+.f{display:flex;flex-direction:column;}
+.f label{font-size:9px;font-weight:900;color:var(--mu);margin-bottom:4px;letter-spacing:.06em;text-transform:uppercase;}
+.iw{display:flex;align-items:center;border:2px solid var(--bdr2);border-radius:9px;background:#FAFAFA;overflow:hidden;transition:border-color .15s,box-shadow .15s;}
+.iw:focus-within{border-color:var(--y);background:#fff;box-shadow:0 0 0 3px rgba(255,214,0,.2);}
+.iw input{flex:1;border:none;outline:none;padding:9px 10px;font-family:var(--fm);font-size:14px;font-weight:700;color:var(--tx);background:transparent;-moz-appearance:textfield;}
 .iw input::-webkit-outer-spin-button,.iw input::-webkit-inner-spin-button{-webkit-appearance:none;}
-.iw .unit{padding:0 12px 0 0;font-size:12px;color:var(--mu);font-weight:800;white-space:nowrap;}
+.iw .unit{padding:0 10px 0 0;font-size:11px;color:var(--mu);font-weight:800;white-space:nowrap;}
 
-/* ── SLIDER ── */
-.sl-wrap{display:flex;align-items:center;gap:14px;margin-top:4px;}
-.sl-wrap input[type=range]{
-  flex:1;-webkit-appearance:none;height:7px;border-radius:7px;
-  background:linear-gradient(to right,#1a1a1a 0%,#1a1a1a var(--sl,0%),#E8E8E8 var(--sl,0%),#E8E8E8 100%);
-  outline:none;border:none;cursor:pointer;
-}
-.sl-wrap input[type=range]::-webkit-slider-thumb{
-  -webkit-appearance:none;width:24px;height:24px;border-radius:50%;
-  background:var(--y);cursor:pointer;border:3px solid #fff;
-  box-shadow:0 0 0 2px var(--yd),0 2px 8px rgba(0,0,0,.15);
-}
-.sl-val{font-family:var(--fm);font-size:22px;font-weight:700;color:#1a1a1a;min-width:28px;text-align:center;}
-.sl-label{font-size:10px;font-weight:900;color:var(--mu);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;}
+/* ── TOTAL ROW ── */
+.total-row{display:flex;justify-content:space-between;align-items:center;background:var(--yll);border:2px solid var(--yl);border-radius:9px;padding:8px 14px;margin-top:12px;}
+.total-row .lbl{font-size:11px;font-weight:900;color:rgba(26,26,26,.55);}
+.total-row .val{font-family:var(--fm);font-size:15px;font-weight:700;color:#1a1a1a;}
 
-/* ── YOMI BOXES ── */
-.yomi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-@media(max-width:400px){.yomi-grid{grid-template-columns:repeat(2,1fr);}}
-.yb{
-  border:2px solid var(--bdr2);border-radius:12px;padding:10px 8px;
-  text-align:center;background:#FAFAFA;
-  transition:border-color .15s,background .15s;
-}
-.yb:focus-within{border-color:var(--y);background:#fff;box-shadow:0 0 0 3px rgba(255,214,0,.2);}
+/* ── YOMI GRID ── */
+.yomi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.yb{border:2px solid var(--bdr2);border-radius:11px;padding:9px 6px;text-align:center;background:#FAFAFA;transition:border-color .15s;}
+.yb:focus-within{border-color:var(--y);background:#fff;box-shadow:0 0 0 2px rgba(255,214,0,.2);}
 .yb-name{font-size:11px;font-weight:900;margin-bottom:1px;}
-.yb-pct{font-size:9px;color:var(--mu);font-weight:700;font-family:var(--fm);margin-bottom:6px;}
-.yb input{
-  width:100%;text-align:center;border:2px solid var(--bdr2);border-radius:7px;
-  padding:6px 4px;font-family:var(--fm);font-size:18px;font-weight:700;color:var(--tx);
-  background:#fff;outline:none;-moz-appearance:textfield;
-  transition:border-color .15s,box-shadow .15s;
-}
+.yb-pct{font-size:9px;color:var(--mu);font-weight:700;font-family:var(--fm);margin-bottom:5px;}
+.yb input{width:100%;text-align:center;border:2px solid var(--bdr2);border-radius:6px;padding:5px 2px;font-family:var(--fm);font-size:17px;font-weight:700;color:var(--tx);background:#fff;outline:none;-moz-appearance:textfield;}
 .yb input::-webkit-outer-spin-button,.yb input::-webkit-inner-spin-button{-webkit-appearance:none;}
-.yb input:focus{border-color:var(--y);box-shadow:0 0 0 2px rgba(255,214,0,.3);}
-
-/* ヨミ色 */
-.yz .yb-name{color:var(--ok);}   .yz{border-color:#BBF7D0!important;background:#F0FDF4!important;}
-.ya .yb-name{color:var(--blue);}
+.yb input:focus{border-color:var(--y);box-shadow:0 0 0 2px rgba(255,214,0,.25);}
+.yz .yb-name{color:var(--ok);}  .yz{border-color:#BBF7D0!important;background:#F0FDF4!important;}
+.ya .yb-name{color:var(--pr);}
 .yb2 .yb-name{color:#3B82F6;}
 .yc .yb-name{color:var(--wa);}
 .yd2 .yb-name{color:var(--ng);}
-.ym .yb-name{color:var(--mu);}   .ym{border-color:#E8E8E8;}
+.ym .yb-name{color:var(--mu);}
 
-/* ── HERO RESULT ── */
-.hero{
-  background:var(--y);border-radius:20px;padding:26px 22px;
-  box-shadow:var(--sh-y);position:relative;overflow:hidden;margin-bottom:14px;
-}
-.hero::before{
-  content:'';position:absolute;right:-20px;top:-20px;
-  width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.18);
-}
-.hero::after{
-  content:'';position:absolute;right:60px;bottom:-30px;
-  width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.1);
-}
-.hero-label{font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:rgba(26,26,26,.55);position:relative;}
-.hero-val{font-family:var(--fm);font-size:clamp(42px,8vw,64px);font-weight:700;line-height:1;color:#1a1a1a;position:relative;}
-.hero-unit{font-size:18px;font-weight:400;margin-left:4px;}
-.hero-sub{font-size:11px;color:rgba(26,26,26,.55);font-family:var(--fm);font-weight:700;position:relative;margin-top:6px;}
+/* ── 商談化率 (moved) ── */
+.neg-rate-row{display:flex;align-items:center;gap:10px;margin-top:12px;background:#F8F8F8;border-radius:9px;padding:10px 12px;border:1px solid var(--bdr2);}
+.neg-rate-row label{font-size:10px;font-weight:900;color:var(--mu);letter-spacing:.05em;flex:1;}
+.neg-rate-row .iw{max-width:110px;}
 
-/* ── RESULT MINI CARDS ── */
-.rc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
-.rc{background:#fff;border:2px solid var(--bdr);border-radius:14px;padding:16px 14px;box-shadow:var(--sh);}
-.rc .rl{font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;}
-.rc .rv{font-family:var(--fm);font-size:clamp(20px,4vw,28px);font-weight:700;line-height:1;}
-.rc .ru{font-size:12px;font-weight:400;margin-left:2px;}
-.rc .rs{font-size:10px;color:var(--mu);font-weight:700;margin-top:5px;line-height:1.6;}
-.rc-blue{color:var(--blue);}   .rc-blue .rl{color:var(--blue);}
-.rc-green{color:var(--ok);}    .rc-green .rl{color:var(--ok);}
-.rc-amber{color:var(--wa);}    .rc-amber .rl{color:var(--wa);}
-.rc-red{color:var(--ng);}      .rc-red .rl{color:var(--ng);}
+/* ── CALC BLOCK ── */
+.calc-block{margin-top:14px;border:2px solid var(--yl);border-radius:12px;overflow:hidden;}
+.cb-header{background:var(--y);padding:9px 14px;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:rgba(26,26,26,.7);}
+.cb-body{padding:12px 14px;background:var(--yll);}
+.cb-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;}
+.cb-lbl{color:var(--mu);font-weight:700;}
+.cb-val{font-family:var(--fm);font-weight:700;color:var(--tx);}
+.cb-highlight{font-size:13px;color:var(--pr);}
+.cb-ok{color:var(--ok);}
+.cb-ng{color:var(--ng);}
+.cb-div{border:none;border-top:2px dashed var(--yd);margin:8px 0;}
+
+/* ── 月間商談数 サマリー ── */
+.monthly-sum{background:#1a1a1a;border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:4px;}
+.monthly-sum .ms-lbl{font-size:10px;font-weight:900;color:rgba(255,255,255,.5);letter-spacing:.06em;}
+.monthly-sum .ms-val{font-family:var(--fm);font-size:22px;font-weight:700;color:var(--y);}
+.monthly-sum .ms-sub{font-size:10px;color:rgba(255,255,255,.4);font-family:var(--fm);margin-top:2px;}
+
+/* ── SLIDER ── */
+.sl-wrap{display:flex;align-items:center;gap:12px;margin-top:4px;}
+.sl-wrap input[type=range]{flex:1;-webkit-appearance:none;height:7px;border-radius:7px;background:linear-gradient(to right,#1a1a1a 0%,#1a1a1a var(--sl,0%),#E0E0E0 var(--sl,0%),#E0E0E0 100%);outline:none;border:none;cursor:pointer;}
+.sl-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--y);cursor:pointer;border:3px solid #fff;box-shadow:0 0 0 2px var(--yd),0 2px 8px rgba(0,0,0,.12);}
+.sl-val{font-family:var(--fm);font-size:20px;font-weight:700;color:#1a1a1a;min-width:24px;text-align:center;}
+.sl-label{font-size:9px;font-weight:900;color:var(--mu);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;}
+
+/* ── HERO ── */
+.hero{background:var(--y);border-radius:18px;padding:24px 20px;box-shadow:var(--sh-y);position:relative;overflow:hidden;margin-bottom:12px;}
+.hero::before{content:'';position:absolute;right:-15px;top:-15px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.18);}
+.hero-label{font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:rgba(26,26,26,.5);position:relative;}
+.hero-val{font-family:var(--fm);font-size:clamp(40px,7vw,58px);font-weight:700;line-height:1;color:#1a1a1a;position:relative;}
+.hero-unit{font-size:16px;font-weight:400;margin-left:3px;}
+.hero-sub{font-size:11px;color:rgba(26,26,26,.5);font-family:var(--fm);font-weight:700;position:relative;margin-top:5px;}
+
+/* ── MINI RESULT CARDS ── */
+.rc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.rc{background:#fff;border:2px solid var(--bdr);border-radius:13px;padding:14px 12px;box-shadow:var(--sh);}
+.rc .rl{font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;}
+.rc .rv{font-family:var(--fm);font-size:clamp(18px,3.5vw,26px);font-weight:700;line-height:1;}
+.rc .ru{font-size:11px;font-weight:400;margin-left:2px;}
+.rc .rs{font-size:10px;color:var(--mu);font-weight:700;margin-top:4px;}
+.rc-blue .rl,.rc-blue .rv{color:var(--pr);}
+.rc-green .rl,.rc-green .rv{color:var(--ok);}
+.rc-violet .rl,.rc-violet .rv{color:var(--sw);}
+.rc-amber .rl,.rc-amber .rv{color:var(--wa);}
 
 /* ── BREAKDOWN ── */
-.bk{
-  background:var(--yll);border:2px solid var(--yl);border-radius:12px;
-  padding:14px 16px;font-size:12px;line-height:2.2;color:var(--mu);font-family:var(--fm);
-}
-.bk-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;}
-.bk-div{border:none;border-top:2px dashed #E6C200;margin:6px 0;}
+.bk{background:var(--yll);border:2px solid var(--yl);border-radius:11px;padding:12px 14px;font-size:12px;line-height:2;color:var(--mu);font-family:var(--fm);}
+.bk-row{display:flex;justify-content:space-between;flex-wrap:wrap;gap:2px;}
+.bk-div{border:none;border-top:2px dashed var(--yd);margin:5px 0;}
 .bk-bold{color:var(--tx);font-weight:700;}
 .bk-ok{color:var(--ok);font-weight:700;}
 .bk-ng{color:var(--ng);font-weight:700;}
-.bk-hi{color:var(--blue);font-weight:700;}
+.bk-hi{color:var(--pr);font-weight:700;}
 .bk-sec{font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--mu);margin:10px 0 4px;padding-top:8px;border-top:1px solid var(--yl);}
 
-/* ── ACTION BADGE ── */
-.act-badge{
-  display:flex;align-items:center;justify-content:space-between;
-  background:#1a1a1a;border-radius:10px;padding:10px 14px;margin-top:4px;
-  gap:8px;
-}
-.act-badge-label{font-size:10px;font-weight:900;color:rgba(255,255,255,.6);letter-spacing:.04em;}
-.act-badge-val{font-family:var(--fm);font-size:20px;font-weight:700;color:var(--y);}
-.act-badge-sub{font-family:var(--fm);font-size:10px;color:rgba(255,255,255,.45);}
+/* ── ACT BADGE ── */
+.act-badge{display:flex;align-items:center;justify-content:space-between;background:#1a1a1a;border-radius:9px;padding:9px 12px;margin-top:4px;gap:8px;}
+.act-badge-lbl{font-size:9px;font-weight:900;color:rgba(255,255,255,.5);}
+.act-badge-val{font-family:var(--fm);font-size:18px;font-weight:700;color:var(--y);}
 
-/* ── WEEK TABLE ── */
-.wk-card{background:#fff;border:2px solid var(--bdr);border-radius:16px;overflow:hidden;box-shadow:var(--sh);}
-.wk-head{background:var(--y);display:grid;border-bottom:2px solid var(--yd);}
-.wk-row{display:grid;border-bottom:1px solid var(--bdr);}
-.wk-row:last-child{border-bottom:none;}
-.wk-head span{padding:11px 14px;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#1a1a1a;}
-.wk-row span{padding:11px 14px;font-size:12px;font-weight:700;color:#444;font-family:var(--fm);}
-.wk-row .wk-n{color:var(--mu);font-size:11px;}
-.wk-row .wk-t{color:#1a1a1a;font-size:14px;font-weight:700;}
-
-/* ── ALERT ── */
-.alert{border-radius:12px;padding:12px 16px;font-size:12px;font-weight:800;margin-bottom:14px;display:flex;align-items:flex-start;gap:8px;line-height:1.6;}
-.alert-ok{background:#F0FDF4;border:2px solid #86EFAC;color:var(--ok);}
-.alert-wa{background:#FFFBEB;border:2px solid #FDE68A;color:var(--wa);}
-.alert-ng{background:#FEF2F2;border:2px solid #FECACA;color:var(--ng);}
-
-/* ── PROGRESS BAR ── */
+/* ── PROGRESS ── */
 .pb-wrap{margin-bottom:10px;}
 .pb-top{display:flex;justify-content:space-between;font-size:11px;font-weight:800;margin-bottom:4px;}
 .pb-top span:last-child{font-family:var(--fm);color:var(--mu);}
@@ -198,36 +164,32 @@ body{font-family:var(--ff);background:var(--bg);color:var(--tx);min-height:100vh
 .pb-fill{height:100%;border-radius:7px;transition:width .5s cubic-bezier(.4,0,.2,1);}
 
 /* ── INFO ROW ── */
-.info-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--bdr);font-size:13px;}
-.info-row:last-child{border-bottom:none;}
-.info-row .lbl{color:var(--mu);font-weight:700;}
-.info-row .val{font-family:var(--fm);font-weight:700;color:var(--tx);}
-.info-row .val.y{color:var(--blue);}
-.info-row .val.ok{color:var(--ok);}
-.info-row .val.ng{color:var(--ng);}
+.ir{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--bdr);font-size:12px;}
+.ir:last-child{border-bottom:none;}
+.ir .lbl{color:var(--mu);font-weight:700;}
+.ir .val{font-family:var(--fm);font-weight:700;}
+.ir .val.ok{color:var(--ok);}
+.ir .val.ng{color:var(--ng);}
+.ir .val.hi{color:var(--pr);}
 
-/* ── SECTION DIVIDER ── */
+/* ── WEEK TABLE ── */
+.wk-wrap{background:#fff;border:2px solid var(--bdr);border-radius:14px;overflow:hidden;box-shadow:var(--sh);}
+.wk-head{background:var(--y);display:grid;border-bottom:2px solid var(--yd);}
+.wk-row{display:grid;border-bottom:1px solid var(--bdr);}
+.wk-row:last-child{border-bottom:none;}
+.wk-head span{padding:9px 12px;font-size:10px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:#1a1a1a;}
+.wk-row span{padding:9px 12px;font-size:12px;font-weight:700;color:#444;font-family:var(--fm);}
+.wk-row .wk-n{color:var(--mu);font-size:10px;}
+.wk-row .wk-t{color:#1a1a1a;font-size:14px;font-weight:700;}
+
+/* ── ALERT ── */
+.alert{border-radius:11px;padding:11px 14px;font-size:12px;font-weight:800;margin-bottom:12px;line-height:1.6;}
+.alert-ok{background:#F0FDF4;border:2px solid #86EFAC;color:var(--ok);}
+.alert-wa{background:#FFFBEB;border:2px solid #FDE68A;color:var(--wa);}
+.alert-ng{background:#FEF2F2;border:2px solid #FECACA;color:var(--ng);}
+
+/* ── SEC DIV ── */
 .sec-div{font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);margin:14px 0 8px;padding-top:12px;border-top:2px solid var(--bdr);}
-
-/* ── FUNNEL ── */
-.funnel{display:flex;align-items:flex-end;gap:0;height:120px;margin:8px 0 6px;justify-content:center;}
-.fn-step{display:flex;flex-direction:column;align-items:center;flex:1;gap:4px;}
-.fn-bar{
-  width:80%;border-radius:8px 8px 0 0;
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--fm);font-size:11px;font-weight:700;color:#fff;
-  transition:height .5s cubic-bezier(.4,0,.2,1);min-height:4px;
-}
-.fn-label{font-size:10px;color:var(--mu);font-weight:800;text-align:center;}
-.fn-val{font-family:var(--fm);font-size:13px;font-weight:700;text-align:center;}
-.fn-arrow{font-size:16px;color:var(--bdr2);padding:0 4px;align-self:center;margin-bottom:28px;}
-
-/* ── UTIL ── */
-.chip{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:900;}
-.chip-ok{background:#DCFCE7;color:var(--ok);}
-.chip-ng{background:#FEE2E2;color:var(--ng);}
-.chip-wa{background:#FEF3C7;color:var(--wa);}
-.chip-y{background:var(--y);color:#1a1a1a;}
 </style>
 </head>
 <body>
@@ -236,7 +198,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--tx);min-height:100vh
 <div class="hd">
   <div class="hd-inner">
     <h1>目標逆算<mark>行動数</mark>計算ツール</h1>
-    <p>進行中ヨミ ＋ 受注率 → 必要行動数をリアルタイム算出</p>
+    <p>ヨミ着地から月次・週次の必要行動数をリアルタイム算出</p>
     <div class="hd-badge" id="hdBadge">— 年 — 月</div>
   </div>
 </div>
@@ -244,40 +206,95 @@ body{font-family:var(--ff);background:var(--bg);color:var(--tx);min-height:100vh
 <div class="wrap">
 <div class="cols">
 
-<!-- ── 左カラム: 入力 ── -->
+<!-- ══ 左カラム ══ -->
 <div>
 
   <!-- 目標設定 -->
   <div class="card">
     <div class="card-ttl">目標設定</div>
 
-    <div class="field">
-      <label>月間 受注目標件数</label>
-      <div class="iw"><input type="number" id="target" value="10" min="0"><span class="unit">件</span></div>
-    </div>
-    <div class="field">
-      <label>受注率（商談 → 受注）</label>
-      <div class="iw"><input type="number" id="winRate" value="30" min="1" max="100"><span class="unit">%</span></div>
-    </div>
-    <div class="field">
-      <label>商談化率（行動 → 商談）</label>
-      <div class="iw"><input type="number" id="negRate" value="20" min="1" max="100"><span class="unit">%</span></div>
-    </div>
-
-    <div class="field" style="margin-top:18px;">
-      <div class="sl-label">今月の残り週数</div>
-      <div class="sl-wrap">
-        <input type="range" id="weeksSlider" min="1" max="4" value="3" style="--sl:66.6%">
-        <span class="sl-val" id="weeksVal">3</span>
-        <span style="font-size:11px;font-weight:800;color:var(--mu);">週</span>
+    <!-- PR -->
+    <div class="type-sec">
+      <div class="type-hd">
+        <span class="pill pill-pr">PR</span>
+        <span class="type-name">新規PR</span>
+      </div>
+      <div class="fg2">
+        <div class="f">
+          <label>件数目標</label>
+          <div class="iw"><input type="number" id="prCnt" value="5" min="0"><span class="unit">件</span></div>
+        </div>
+        <div class="f">
+          <label>受注率</label>
+          <div class="iw"><input type="number" id="prRate" value="20" min="1" max="100"><span class="unit">%</span></div>
+        </div>
       </div>
     </div>
-  </div>
+
+    <!-- NET -->
+    <div class="type-sec">
+      <div class="type-hd">
+        <span class="pill pill-net">NET</span>
+        <span class="type-name">ネット予約</span>
+      </div>
+      <div class="fg2">
+        <div class="f">
+          <label>件数目標</label>
+          <div class="iw"><input type="number" id="netCnt" value="3" min="0"><span class="unit">件</span></div>
+        </div>
+        <div class="f">
+          <label>受注率</label>
+          <div class="iw"><input type="number" id="netRate" value="50" min="1" max="100"><span class="unit">%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 売上 -->
+    <div class="type-sec">
+      <div class="type-hd">
+        <span class="pill pill-rev">売上</span>
+        <span class="type-name">月間売上目標</span>
+      </div>
+      <div class="f">
+        <label>目標売上</label>
+        <div class="iw"><input type="number" id="revTarget" value="0" min="0"><span class="unit">円</span></div>
+      </div>
+    </div>
+
+    <!-- 切替 -->
+    <div class="type-sec">
+      <div class="type-hd">
+        <span class="pill pill-sw">切替</span>
+        <span class="type-name">アップセル</span>
+      </div>
+      <div class="fg2">
+        <div class="f">
+          <label>件数目標</label>
+          <div class="iw"><input type="number" id="swCnt" value="2" min="0"><span class="unit">件</span></div>
+        </div>
+        <div class="f">
+          <label>受注率</label>
+          <div class="iw"><input type="number" id="swRate" value="40" min="1" max="100"><span class="unit">%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 合計 -->
+    <div class="total-row">
+      <span class="lbl">合計目標件数</span>
+      <span class="val" id="totalTargetDisp">— 件</span>
+    </div>
+    <div class="total-row" style="margin-top:6px;">
+      <span class="lbl">加重平均 受注率</span>
+      <span class="val" id="weightedRateDisp">— %</span>
+    </div>
+  </div><!-- /目標設定 -->
 
   <!-- 進行中ヨミ -->
   <div class="card">
     <div class="card-ttl">進行中ヨミ</div>
 
+    <!-- ヨミグリッド（変更なし） -->
     <div class="yomi-grid">
       <div class="yb yz">
         <div class="yb-name">済</div>
@@ -311,121 +328,162 @@ body{font-family:var(--ff);background:var(--bg);color:var(--tx);min-height:100vh
       </div>
     </div>
 
-    <!-- 進行中サマリー -->
-    <div style="margin-top:14px;">
-      <div class="info-row">
-        <span class="lbl">進行中 合計件数</span>
-        <span class="val y" id="totalInProg">— 件</span>
+    <!-- 商談化率（移動） -->
+    <div class="neg-rate-row">
+      <label>商談化率（行動 → 商談）</label>
+      <div class="iw">
+        <input type="number" id="negRate" value="20" min="1" max="100" style="text-align:right;">
+        <span class="unit">%</span>
       </div>
-      <div class="info-row">
-        <span class="lbl">　うち 商談済（要クロージング）</span>
-        <span class="val" id="negotiatedCount">— 件</span>
+    </div>
+
+    <!-- 計算ブロック -->
+    <div class="calc-block">
+      <div class="cb-header">進行中から逆算</div>
+      <div class="cb-body">
+
+        <!-- 進行中から何件商談行くか -->
+        <div class="cb-row" style="background:#fff;border-radius:8px;padding:8px 10px;margin-bottom:10px;">
+          <span class="cb-lbl" style="color:var(--tx);font-weight:900;">進行中から何件商談行くか</span>
+          <span class="cb-val" style="font-size:18px;color:var(--pr);" id="cb_inNeg">— 件</span>
+        </div>
+
+        <!-- 着地 - 目標 = 不足 -->
+        <div class="cb-row">
+          <span class="cb-lbl">進行中 着地ヨミ（期待値）</span>
+          <span class="cb-val" id="cb_landing">—</span>
+        </div>
+        <div class="cb-row">
+          <span class="cb-lbl">合計目標件数</span>
+          <span class="cb-val" id="cb_target">—</span>
+        </div>
+        <hr class="cb-div">
+        <div class="cb-row">
+          <span class="cb-lbl" style="color:var(--tx);font-weight:900;">不足分</span>
+          <span class="cb-val" id="cb_shortage" style="font-size:14px;">—</span>
+        </div>
+
+        <hr class="cb-div">
+
+        <!-- 不足 ÷ 受注率 = 残商談 -->
+        <div class="cb-row">
+          <span class="cb-lbl" id="cb_newMeetLabel">不足 — 件 ÷ 受注率 —%</span>
+          <span class="cb-val cb-highlight" id="cb_newMeet">— 件 必要</span>
+        </div>
+        <div class="cb-row" style="margin-top:2px;">
+          <span class="cb-lbl" style="font-size:11px;color:rgba(0,0,0,.35);">↑ 未商談として組む新規商談</span>
+        </div>
+
+        <hr class="cb-div">
+
+        <!-- 月間商談数 -->
+        <div class="monthly-sum">
+          <div>
+            <div class="ms-lbl">月間 商談数</div>
+            <div class="ms-sub" id="ms_formula">進行中 — ＋ 未商談 — 件</div>
+          </div>
+          <div class="ms-val" id="cb_monthlyMeet">—</div>
+        </div>
+
       </div>
-      <div class="info-row">
-        <span class="lbl">　うち 未商談（要アクション）</span>
-        <span class="val ng" id="misCount">— 件</span>
-      </div>
-      <div class="info-row" style="border-top:2px solid var(--bdr);margin-top:4px;padding-top:10px;">
-        <span class="lbl" style="font-weight:900;color:var(--tx);">ヨミ着地読み（期待値）</span>
-        <span class="val ok" id="landingVal">— 件</span>
-      </div>
+    </div>
+  </div><!-- /進行中ヨミ -->
+
+  <!-- 残り週数 -->
+  <div class="card">
+    <div class="card-ttl">残り週数</div>
+    <div class="sl-label">今月の残り週数</div>
+    <div class="sl-wrap">
+      <input type="range" id="weeksSlider" min="1" max="4" value="3" style="--sl:66.6%">
+      <span class="sl-val" id="weeksVal">3</span>
+      <span style="font-size:11px;font-weight:800;color:var(--mu);">週</span>
     </div>
   </div>
 
 </div><!-- /左カラム -->
 
-<!-- ── 右カラム: 結果 ── -->
+<!-- ══ 右カラム ══ -->
 <div>
 
-  <!-- アラート -->
   <div id="alertBox"></div>
 
   <!-- ヒーロー: 月間総行動数 -->
   <div class="hero">
     <div class="hero-label">月間 総必要行動数</div>
     <div class="hero-val" id="heroVal">—<span class="hero-unit">件 / 月</span></div>
-    <div class="hero-sub" id="heroSub">—</div>
+    <div class="hero-sub" id="heroSub">新規開拓 — 件 ＋ 未商談フォロー — 件</div>
   </div>
 
-  <!-- 週次 + 残り商談数 -->
+  <!-- 週次行動数 / 月間商談数 -->
   <div class="rc-grid">
     <div class="rc rc-green">
       <div class="rl">週次 必要行動数</div>
       <div class="rv" id="weeklyVal">—<span class="ru">件/週</span></div>
-      <div class="rs" id="weeksLeftLabel">残り — 週で達成</div>
+      <div class="rs" id="weeksLeftSub">残り — 週で達成</div>
     </div>
-    <div class="rc rc-amber">
-      <div class="rl">残り必要商談数</div>
-      <div class="rv" id="negNeededVal">—<span class="ru">件</span></div>
-      <div class="rs" id="negNeededSub">新規開拓で必要な商談</div>
+    <div class="rc rc-violet">
+      <div class="rl">月間 商談数</div>
+      <div class="rv" id="monthlyMeetDisp">—<span class="ru">件</span></div>
+      <div class="rs" id="monthlyMeetSub">進行中 — ＋ 未商談 — 件</div>
     </div>
   </div>
 
-  <!-- 達成状況プログレス -->
-  <div class="card" style="margin-bottom:14px;">
-    <div class="card-ttl">達成状況</div>
+  <!-- 達成状況 -->
+  <div class="card" style="margin-bottom:12px;">
+    <div class="card-ttl">達成状況（ヨミ着地ベース）</div>
 
     <div class="pb-wrap">
       <div class="pb-top">
-        <span>ヨミ着地 / 目標</span>
+        <span>着地読み / 目標</span>
         <span id="pbPct">0%</span>
       </div>
       <div class="pb-track">
-        <div class="pb-fill" id="pbFill" style="width:0%;background:linear-gradient(90deg,#16a34a,#4ade80);"></div>
+        <div class="pb-fill" id="pbFill" style="width:0%"></div>
       </div>
     </div>
 
-    <div class="info-row" style="margin-top:8px;">
-      <span class="lbl">目標受注件数</span>
-      <span class="val" id="s_target">—</span>
+    <div class="ir">
+      <span class="lbl">PR目標 <span style="color:var(--pr);font-family:var(--fm);font-size:11px;" id="prGoalDisp"></span></span>
+      <span class="val hi" id="prRate_disp">—</span>
     </div>
-    <div class="info-row">
-      <span class="lbl">ヨミ着地（期待値）</span>
-      <span class="val ok" id="s_landing">—</span>
+    <div class="ir">
+      <span class="lbl">NET目標 <span style="color:var(--net);font-family:var(--fm);font-size:11px;" id="netGoalDisp"></span></span>
+      <span class="val" style="color:var(--net);" id="netRate_disp">—</span>
     </div>
-    <div class="info-row">
-      <span class="lbl">差分（不足件数）</span>
-      <span class="val" id="s_diff">—</span>
+    <div class="ir">
+      <span class="lbl">切替目標 <span style="color:var(--sw);font-family:var(--fm);font-size:11px;" id="swGoalDisp"></span></span>
+      <span class="val" style="color:var(--sw);" id="swRate_disp">—</span>
     </div>
-  </div>
-
-  <!-- セールスファネル -->
-  <div class="card" style="margin-bottom:14px;">
-    <div class="card-ttl">セールスファネル（月次フルベース）</div>
-    <div class="funnel" id="funnel"></div>
-    <div style="display:flex;justify-content:center;gap:14px;margin-top:2px;">
-      <span style="font-size:10px;font-weight:800;color:var(--mu);">商談化率 <span id="fn_negRate" style="color:var(--tx);font-family:var(--fm);">—%</span></span>
-      <span style="font-size:10px;font-weight:800;color:var(--mu);">受注率 <span id="fn_winRate" style="color:var(--tx);font-family:var(--fm);">—%</span></span>
+    <div class="ir" style="border-top:2px solid var(--bdr);margin-top:4px;padding-top:10px;">
+      <span class="lbl" style="color:var(--tx);font-weight:900;">合計着地 / 合計目標</span>
+      <span class="val" id="landingVsTarget">— / — 件</span>
+    </div>
+    <div class="ir">
+      <span class="lbl" style="font-weight:900;">不足件数</span>
+      <span class="val" id="shortageDisp">— 件</span>
     </div>
   </div>
 
   <!-- 詳細内訳 -->
-  <div class="card" style="margin-bottom:14px;">
-    <div class="card-ttl">計算 詳細内訳</div>
-
-    <div class="bk" id="breakdown">
-      <!-- JS injection -->
-    </div>
+  <div class="card" style="margin-bottom:12px;">
+    <div class="card-ttl">行動数 詳細内訳</div>
+    <div class="bk" id="breakdown"></div>
   </div>
 
   <!-- 週次プラン -->
-  <div class="wk-card" id="weekPlan"></div>
+  <div id="weekPlanWrap"></div>
 
 </div><!-- /右カラム -->
 </div><!-- /cols -->
 </div><!-- /wrap -->
 
 <script>
-const $ = id => document.getElementById(id);
+const $  = id => document.getElementById(id);
+const n  = v  => parseFloat(v) || 0;
+const cl = v  => Math.max(0, Math.ceil(v));
+const f1 = v  => Math.round(v * 10) / 10;
 
-// ─── helpers ───
-const n  = v => parseFloat(v) || 0;
-const cl = v => Math.max(0, Math.ceil(v));
-const f1 = v => Math.round(v * 10) / 10;
-const fmt = (v, unit='件') => `${f1(v)}${unit}`;
-
-// ─── YOMI RATES ───
-const YOMI = [
+const YOMI_DEF = [
   { id:'y_zumi', label:'済',     rate:1.0 },
   { id:'y_a',    label:'Aヨミ',  rate:1.0 },
   { id:'y_b',    label:'Bヨミ',  rate:0.7 },
@@ -434,55 +492,82 @@ const YOMI = [
   { id:'y_mis',  label:'未商談', rate:0   },
 ];
 
-// ─── MAIN CALC ───
 function calc() {
-  const target  = n($('target').value);
-  const winR    = Math.max(0.01, n($('winRate').value)  / 100);
-  const negR    = Math.max(0.01, n($('negRate').value)  / 100);
-  const weeks   = Math.max(1,   n($('weeksSlider').value));
+  // ── 目標設定 ──
+  const prCnt  = n($('prCnt').value);
+  const prRate = Math.max(0.01, n($('prRate').value)) / 100;
+  const netCnt = n($('netCnt').value);
+  const netRate= Math.max(0.01, n($('netRate').value)) / 100;
+  const swCnt  = n($('swCnt').value);
+  const swRate = Math.max(0.01, n($('swRate').value)) / 100;
+  const revTgt = n($('revTarget').value);
 
-  // ヨミ件数
-  const yv = YOMI.map(d => ({ ...d, cnt: n($(d.id).value) }));
+  const totalTarget = prCnt + netCnt + swCnt;
+  const weightedRate = totalTarget > 0
+    ? (prCnt * prRate + netCnt * netRate + swCnt * swRate) / totalTarget
+    : 0.2;
+
+  // ── ヨミ ──
+  const yv  = YOMI_DEF.map(d => ({ ...d, cnt: n($(d.id).value) }));
   const mis = n($('y_mis').value);
-  const negotiated = yv.filter(d => d.id !== 'y_mis').reduce((s, d) => s + d.cnt, 0);
-  const totalInProg = negotiated + mis;
+  const inNeg   = yv.filter(d => d.id !== 'y_mis').reduce((s,d) => s + d.cnt, 0); // 商談中件数
+  const landing = yv.reduce((s, d) => s + d.cnt * d.rate, 0); // 着地期待値
 
-  // 着地読み（期待値）
-  const landing = yv.reduce((s, d) => s + d.cnt * d.rate, 0);
+  // ── 商談化率 / 週数 ──
+  const negRate = Math.max(0.01, n($('negRate').value)) / 100;
+  const weeks   = Math.max(1, n($('weeksSlider').value));
 
-  // 差分
-  const diff       = Math.max(0, target - landing);
-  const newNeg     = cl(diff / winR);          // 新規で必要な商談数
-  const newActions = cl(newNeg / negR);         // 新規開拓行動数
-  const followAct  = mis;                       // 未商談フォロー行動数
-  const totalAct   = newActions + followAct;
-  const weeklyAct  = cl(totalAct / weeks);
+  // ── 逆算 ──
+  const shortage    = Math.max(0, totalTarget - landing);  // 不足分
+  const newMeetings = cl(shortage / weightedRate);          // 残商談（未商談）
+  const monthlyMeet = inNeg + newMeetings;                  // 月間商談数
 
-  // フルベース（参考）
-  const fullNeg = cl(target / winR);
-  const fullAct = cl(fullNeg / negR);
+  const newActions  = cl(newMeetings / negRate);            // 新規開拓行動数
+  const followActs  = mis;                                  // 未商談フォロー
+  const totalActs   = newActions + followActs;
+  const weeklyActs  = cl(totalActs / weeks);
 
-  // ─── DOM更新 ───
+  const wRatePct = Math.round(weightedRate * 100);
+
+  // ── ヘッダー日付 ──
   const now = new Date();
   $('hdBadge').textContent = `${now.getFullYear()}年${now.getMonth()+1}月`;
 
-  $('totalInProg').textContent   = `${totalInProg} 件`;
-  $('negotiatedCount').textContent = `${negotiated} 件`;
-  $('misCount').textContent      = `${mis} 件`;
-  $('landingVal').textContent    = `${f1(landing)} 件`;
+  // ── 目標設定表示 ──
+  $('totalTargetDisp').textContent = `${totalTarget} 件`;
+  $('weightedRateDisp').textContent = `${wRatePct} %`;
 
-  // hero
-  $('heroVal').innerHTML = `${totalAct}<span class="hero-unit">件 / 月</span>`;
-  $('heroSub').textContent = `新規開拓 ${newActions}件 ＋ 未商談フォロー ${followAct}件`;
+  // ── 進行中ヨミ 計算ブロック ──
+  $('cb_inNeg').textContent    = `${inNeg} 件`;
+  $('cb_landing').textContent  = `${f1(landing)} 件`;
+  $('cb_target').textContent   = `${totalTarget} 件`;
 
-  // mini cards
-  $('weeklyVal').innerHTML = `${weeklyAct}<span class="ru">件/週</span>`;
-  $('weeksLeftLabel').textContent = `残り ${weeks} 週で達成`;
-  $('negNeededVal').innerHTML = `${newNeg}<span class="ru">件</span>`;
-  $('negNeededSub').textContent = `（差分 ${f1(diff)} 件 ÷ 受注率 ${Math.round(winR*100)}%）`;
+  const shortEl = $('cb_shortage');
+  if (shortage <= 0) {
+    shortEl.textContent  = '0 件（目標達成見込み ✅）';
+    shortEl.className    = 'cb-val cb-ok';
+  } else {
+    shortEl.textContent  = `${f1(shortage)} 件 不足`;
+    shortEl.className    = 'cb-val cb-ng';
+  }
 
-  // progress
-  const pct = target > 0 ? Math.min(100, (landing / target) * 100) : 0;
+  $('cb_newMeetLabel').textContent = `不足 ${f1(shortage)} 件 ÷ 受注率 ${wRatePct}%`;
+  $('cb_newMeet').textContent      = `${newMeetings} 件 必要`;
+  $('ms_formula').textContent      = `進行中 ${inNeg} ＋ 未商談 ${newMeetings} 件`;
+  $('cb_monthlyMeet').textContent  = `${monthlyMeet} 件`;
+
+  // ── ヒーロー ──
+  $('heroVal').innerHTML = `${totalActs}<span class="hero-unit">件 / 月</span>`;
+  $('heroSub').textContent = `新規開拓 ${newActions}件 ＋ 未商談フォロー ${followActs}件`;
+
+  // ── ミニカード ──
+  $('weeklyVal').innerHTML      = `${weeklyActs}<span class="ru">件/週</span>`;
+  $('weeksLeftSub').textContent = `残り ${weeks} 週で達成`;
+  $('monthlyMeetDisp').innerHTML = `${monthlyMeet}<span class="ru">件</span>`;
+  $('monthlyMeetSub').textContent = `進行中 ${inNeg} ＋ 未商談 ${newMeetings} 件`;
+
+  // ── 達成状況 ──
+  const pct = totalTarget > 0 ? Math.min(100, (landing / totalTarget) * 100) : 0;
   $('pbPct').textContent = `${pct.toFixed(0)}%`;
   $('pbFill').style.width = pct + '%';
   $('pbFill').style.background = pct >= 100
@@ -491,184 +576,113 @@ function calc() {
     ? 'linear-gradient(90deg,#d97706,#fbbf24)'
     : 'linear-gradient(90deg,#dc2626,#f87171)';
 
-  $('s_target').textContent  = `${target} 件`;
-  $('s_landing').textContent = `${f1(landing)} 件`;
-  const diffEl = $('s_diff');
-  if (diff <= 0) {
-    diffEl.textContent  = '0 件（達成見込み ✅）';
-    diffEl.className    = 'val ok';
-  } else {
-    diffEl.textContent  = `${f1(diff)} 件 不足`;
-    diffEl.className    = 'val ng';
-  }
+  $('prGoalDisp').textContent   = prCnt  ? `${prCnt}件 / 受注率${Math.round(prRate*100)}%`  : '';
+  $('netGoalDisp').textContent  = netCnt ? `${netCnt}件 / 受注率${Math.round(netRate*100)}%` : '';
+  $('swGoalDisp').textContent   = swCnt  ? `${swCnt}件 / 受注率${Math.round(swRate*100)}%`  : '';
+  $('prRate_disp').textContent  = prCnt  ? `目標 ${prCnt} 件` : '—';
+  $('netRate_disp').textContent = netCnt ? `目標 ${netCnt} 件` : '—';
+  $('swRate_disp').textContent  = swCnt  ? `目標 ${swCnt} 件` : '—';
+  $('landingVsTarget').textContent = `${f1(landing)} / ${totalTarget} 件`;
+  const sdEl = $('shortageDisp');
+  sdEl.textContent = shortage <= 0 ? '0 件（達成見込み ✅）' : `${f1(shortage)} 件`;
+  sdEl.className   = shortage <= 0 ? 'val ok' : 'val ng';
 
-  // Funnel rates display
-  $('fn_negRate').textContent = Math.round(negR * 100) + '%';
-  $('fn_winRate').textContent = Math.round(winR * 100) + '%';
-
-  // Funnel
-  renderFunnel(fullAct, fullNeg, target, winR, negR);
-
-  // Breakdown
-  renderBreakdown(yv, mis, landing, target, diff, newNeg, newActions, followAct, totalAct, weeklyAct, weeks, winR, negR, fullNeg, fullAct);
-
-  // Alert
-  renderAlert(diff, target, weeklyAct);
-
-  // Week plan
-  renderWeekPlan(weeks, newActions, followAct, weeklyAct);
-}
-
-function renderFunnel(actions, negs, wins, winR, negR) {
-  const max = Math.max(actions, 1);
-  const steps = [
-    { label:'行動',  val: cl(actions), h: 100,                                    color:'#2563EB' },
-    { label:'商談',  val: cl(negs),    h: Math.round((negs   / max) * 100),       color:'#7c3aed' },
-    { label:'受注',  val: cl(wins),    h: Math.max(6, Math.round((wins / max) * 100)), color:'#16a34a' },
-  ];
-  const MIN_H = 16, MAX_H = 100;
-  $('funnel').innerHTML = steps.map((s, i) => `
-    <div class="fn-step">
-      <div class="fn-val" style="color:${s.color};">${s.val}</div>
-      <div style="flex:1;width:100%;display:flex;align-items:flex-end;justify-content:center;">
-        <div class="fn-bar"
-          style="height:${Math.max(MIN_H, s.h)}px;background:${s.color};opacity:${0.7+i*0.15};">
-          ${s.h >= 30 ? '' : ''}
-        </div>
-      </div>
-      <div class="fn-label">${s.label}</div>
-    </div>
-    ${i < steps.length - 1 ? '<div class="fn-arrow">›</div>' : ''}
-  `).join('');
-}
-
-function renderBreakdown(yv, mis, landing, target, diff, newNeg, newActions, followAct, totalAct, weeklyAct, weeks, winR, negR, fullNeg, fullAct) {
-  const rows = yv.filter(d => d.cnt > 0);
-  const yomiRows = rows.map(d => `
-    <div class="bk-row">
-      <span>${d.label}：${d.cnt}件 ${d.rate < 1 ? `× ${d.rate * 100}%` : d.id === 'y_mis' ? '（未商談・要フォロー）' : '（確定）'}</span>
-      <span class="bk-bold">${f1(d.cnt * d.rate)}件</span>
-    </div>
-  `).join('');
-
-  const statusClass = diff <= 0 ? 'bk-ok' : 'bk-ng';
-  const statusLabel = diff <= 0 ? '✅ 達成見込み' : `${f1(diff)}件 不足`;
+  // ── 詳細内訳 ──
+  const yomiRows = yv.filter(d => d.cnt > 0).map(d =>
+    `<div class="bk-row">
+      <span>${d.label}：${d.cnt}件 ${d.rate > 0 && d.rate < 1 ? `× ${d.rate*100}%` : d.rate===0 ? '（要フォロー）' : '（確定）'}</span>
+      <span class="bk-bold">${f1(d.cnt * d.rate)} 件</span>
+    </div>`
+  ).join('');
 
   $('breakdown').innerHTML = `
-    <div class="bk-sec">① ヨミ着地 計算</div>
-    ${yomiRows || '<div style="color:var(--mu);">ヨミ未入力</div>'}
+    <div class="bk-sec">① 進行中ヨミ 着地読み</div>
+    ${yomiRows || '<div style="color:var(--mu)">ヨミ未入力</div>'}
     <hr class="bk-div">
-    <div class="bk-row">
-      <span>着地読み 合計</span>
-      <span class="bk-bold">${f1(landing)}件</span>
-    </div>
-    <div class="bk-row">
-      <span>目標 ${target}件 − 着地 ${f1(landing)}件</span>
-      <span class="${statusClass}">${statusLabel}</span>
+    <div class="bk-row"><span>着地読み 合計</span><span class="bk-bold">${f1(landing)} 件</span></div>
+    <div class="bk-row"><span>合計目標 ${totalTarget}件 − 着地 ${f1(landing)}件</span>
+      <span class="${shortage > 0 ? 'bk-ng' : 'bk-ok'}">${shortage > 0 ? `${f1(shortage)}件 不足` : '✅ 達成見込み'}</span>
     </div>
 
-    <div class="bk-sec">② 新規開拓 逆算</div>
-    <div class="bk-row">
-      <span>不足件数 ${f1(diff)}件 ÷ 受注率 ${Math.round(winR*100)}%</span>
-      <span class="bk-bold">新規商談 ${newNeg}件 必要</span>
-    </div>
-    <div class="bk-row">
-      <span>新規商談 ${newNeg}件 ÷ 商談化率 ${Math.round(negR*100)}%</span>
-      <span class="bk-bold">新規行動 ${newActions}件 必要</span>
-    </div>
+    <div class="bk-sec">② 新規商談 逆算（未商談）</div>
+    <div class="bk-row"><span>不足 ${f1(shortage)}件 ÷ 受注率 ${wRatePct}%</span><span class="bk-bold">新規商談 ${newMeetings} 件</span></div>
+    <div class="bk-row"><span>進行中商談 ${inNeg}件 ＋ 新規商談 ${newMeetings}件</span><span class="bk-hi">月間商談数 ${monthlyMeet} 件</span></div>
 
-    <div class="bk-sec">③ 未商談フォロー</div>
-    <div class="bk-row">
-      <span>未商談 ${mis}件 → 各1件のフォローアクション</span>
-      <span class="bk-bold">${mis}件</span>
-    </div>
-
+    <div class="bk-sec">③ 必要行動数 計算</div>
+    <div class="bk-row"><span>新規商談 ${newMeetings}件 ÷ 商談化率 ${Math.round(negRate*100)}%</span><span class="bk-bold">新規行動 ${newActions} 件</span></div>
+    <div class="bk-row"><span>未商談フォロー（進行中 ${mis}件）</span><span class="bk-bold">${followActs} 件</span></div>
     <hr class="bk-div">
-    <div class="bk-row">
-      <span>新規行動 ${newActions} ＋ フォロー ${followAct}</span>
-      <span class="bk-hi">月間 総行動 ${totalAct}件</span>
-    </div>
-    <div class="bk-row">
-      <span>月間 ${totalAct}件 ÷ 残り ${weeks}週</span>
-      <span class="bk-hi">週次 ${weeklyAct}件/週</span>
-    </div>
+    <div class="bk-row"><span>新規行動 ${newActions} ＋ フォロー ${followActs}</span><span class="bk-hi">月間行動 ${totalActs} 件</span></div>
+    <div class="bk-row"><span>月間 ${totalActs}件 ÷ 残り ${weeks}週</span><span class="bk-hi">週次 ${weeklyActs} 件/週</span></div>
 
-    <div class="bk-sec">参考：フルベース（ゼロスタート）</div>
-    <div class="bk-row">
-      <span>目標 ${target}件 ÷ 受注率 ${Math.round(winR*100)}%</span>
-      <span class="bk-bold">月間必要商談 ${fullNeg}件</span>
-    </div>
-    <div class="bk-row">
-      <span>商談 ${fullNeg}件 ÷ 商談化率 ${Math.round(negR*100)}%</span>
-      <span class="bk-bold">月間必要行動 ${fullAct}件</span>
-    </div>
+    <div class="bk-sec">参考：フルベース目標値</div>
+    <div class="bk-row"><span>PR ${prCnt}件 ÷ ${Math.round(prRate*100)}%</span><span class="bk-bold">商談 ${cl(prCnt/prRate)} 件</span></div>
+    <div class="bk-row"><span>NET ${netCnt}件 ÷ ${Math.round(netRate*100)}%</span><span class="bk-bold">商談 ${cl(netCnt/netRate)} 件</span></div>
+    <div class="bk-row"><span>切替 ${swCnt}件 ÷ ${Math.round(swRate*100)}%</span><span class="bk-bold">商談 ${cl(swCnt/swRate)} 件</span></div>
   `;
-}
 
-function renderAlert(diff, target, weeklyAct) {
-  let html = '';
-  if (target === 0) {
-    html = '';
-  } else if (diff <= 0) {
-    html = `<div class="alert alert-ok">✅ 現在のヨミ着地だけで目標達成が見込めます。クロージングに集中しましょう。</div>`;
-  } else if (weeklyAct <= 5) {
-    html = `<div class="alert alert-wa">⚠️ 週 ${weeklyAct} 件のアクションで目標達成可能です。計画的に動きましょう。</div>`;
-  } else if (weeklyAct <= 15) {
-    html = `<div class="alert alert-wa">⚠️ 週 ${weeklyAct} 件が必要です。優先度をつけて行動計画を組んでください。</div>`;
+  // ── アラート ──
+  let alertHtml = '';
+  if (totalTarget === 0) {
+    alertHtml = '';
+  } else if (shortage <= 0) {
+    alertHtml = `<div class="alert alert-ok">✅ 現在のヨミ着地で全目標達成が見込めます。クロージングに集中しましょう。</div>`;
+  } else if (weeklyActs <= 5) {
+    alertHtml = `<div class="alert alert-wa">⚠️ 週 ${weeklyActs} 件のアクションで達成可能です。計画的に動きましょう。</div>`;
   } else {
-    html = `<div class="alert alert-ng">🚨 週 ${weeklyAct} 件が必要です。今すぐ計画を見直し、集中的にアタックしてください。</div>`;
+    alertHtml = `<div class="alert alert-ng">🚨 週 ${weeklyActs} 件が必要です。優先度を上げて集中的にアタックしてください。</div>`;
   }
-  $('alertBox').innerHTML = html;
-}
+  $('alertBox').innerHTML = alertHtml;
 
-function renderWeekPlan(weeks, newActions, followAct, weeklyAct) {
-  if (weeklyAct === 0) { $('weekPlan').innerHTML = ''; return; }
+  // ── 週次プラン ──
+  if (weeklyActs === 0) { $('weekPlanWrap').innerHTML = ''; return; }
+
   const newPerWk    = cl(newActions / weeks);
-  const followPerWk = cl(followAct  / weeks);
-
-  const head = `
-    <div class="wk-head" style="grid-template-columns:44px 1fr 1fr 1fr 64px;">
-      <span>週</span>
-      <span>新規開拓</span>
-      <span>未商談フォロー</span>
-      <span>計</span>
-      <span>累計</span>
-    </div>`;
-
-  let rows = '';
+  const followPerWk = cl(followActs / weeks);
+  const meetPerWk   = cl(monthlyMeet / weeks);
+  const cols = '44px 1fr 1fr 1fr 1fr 64px';
+  let wkRows = '';
   let cumul = 0;
   for (let i = 0; i < weeks; i++) {
-    const wNew    = i < weeks - 1 ? newPerWk    : Math.max(0, newActions  - newPerWk * (weeks - 1));
-    const wFollow = i < weeks - 1 ? followPerWk : Math.max(0, followAct   - followPerWk * (weeks - 1));
-    const wTotal  = wNew + wFollow;
-    cumul += wTotal;
-    rows += `
-      <div class="wk-row" style="grid-template-columns:44px 1fr 1fr 1fr 64px;">
+    const wN = i < weeks - 1 ? newPerWk    : Math.max(0, newActions  - newPerWk    * (weeks-1));
+    const wF = i < weeks - 1 ? followPerWk : Math.max(0, followActs  - followPerWk * (weeks-1));
+    const wM = i < weeks - 1 ? meetPerWk   : Math.max(0, monthlyMeet - meetPerWk   * (weeks-1));
+    const wT = wN + wF;
+    cumul += wT;
+    wkRows += `
+      <div class="wk-row" style="grid-template-columns:${cols};">
         <span class="wk-n">W${i+1}</span>
-        <span>${wNew}件</span>
-        <span>${wFollow}件</span>
-        <span>${wTotal}件</span>
-        <span class="wk-t">${cumul}件</span>
+        <span>${wN} 件</span>
+        <span>${wF} 件</span>
+        <span style="color:var(--sw);font-weight:700;">${wM} 件</span>
+        <span>${wT} 件</span>
+        <span class="wk-t">${cumul} 件</span>
       </div>`;
   }
-  $('weekPlan').innerHTML = head + rows;
+  $('weekPlanWrap').innerHTML = `
+    <div class="wk-wrap">
+      <div class="wk-head" style="grid-template-columns:${cols};">
+        <span>週</span><span>新規行動</span><span>フォロー</span>
+        <span style="color:var(--sw);">商談数</span><span>計</span><span>累計</span>
+      </div>
+      ${wkRows}
+    </div>`;
 }
 
-// ─── SLIDER ───
+// ── スライダー ──
 $('weeksSlider').addEventListener('input', function() {
   const v = parseInt(this.value);
   $('weeksVal').textContent = v;
-  const pct = ((v - 1) / 3) * 100;
-  this.style.setProperty('--sl', pct + '%');
+  this.style.setProperty('--sl', ((v-1)/3*100) + '%');
   calc();
 });
 
-// ─── 全入力にイベント ───
-['target','winRate','negRate','y_zumi','y_a','y_b','y_c','y_d','y_mis'].forEach(id => {
+// ── 全入力イベント ──
+['prCnt','prRate','netCnt','netRate','revTarget','swCnt','swRate',
+ 'negRate','y_zumi','y_a','y_b','y_c','y_d','y_mis'].forEach(id => {
   $(id).addEventListener('input', calc);
 });
 
-// ─── 初期実行 ───
 calc();
 </script>
 </body>
