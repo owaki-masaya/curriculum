@@ -229,17 +229,16 @@ body{background:#fff;}
   <div class="card">
     <div class="card-ttl"><span class="pill pill-pr">PR</span>新規PR 目標</div>
     <div class="fg fg2" style="margin-bottom:12px">
-      <div class="f"><label>PR件数目標</label><input type="number" placeholder="例: 5" oninput="sg('pr_cnt',this.value)"></div>
-      <div class="f"><label>新規売上目標（円）</label><input type="number" placeholder="例: 125000" oninput="sg('pr_rev',this.value);updArpu()"></div>
+      <div class="f"><label>PR件数目標</label><input type="number" placeholder="例: 5" onchange="sg('pr_cnt',this.value)"></div>
+      <div class="f"><label>新規売上目標（円）</label><input type="number" placeholder="例: 125000" onchange="sg('pr_rev',this.value);updArpu()"></div>
     </div>
     <div class="arpu-box" style="margin-bottom:12px">
       <span class="arpu-label">予算ARPU（新規売上 ÷ 件数）</span>
       <span class="arpu-val" id="prArpuBudget">—</span>
     </div>
-    <div class="fg fg3">
-      <div class="f"><label>平均受注率（%）</label><input type="number" placeholder="例: 15" oninput="sg('pr_rate',this.value)"></div>
-      <div class="f"><label>想定ARPU（円）</label><input type="number" placeholder="例: 17500" oninput="sg('pr_arpu_est',this.value);updArpu()"></div>
-      <div class="f"><label>売上見込み試算</label><input type="text" id="prRevLanding" disabled></div>
+    <div class="fg fg2">
+      <div class="f"><label>平均受注率（%）</label><input type="number" placeholder="例: 15" onchange="sg('pr_rate',this.value)"></div>
+      <div class="f"><label>想定ARPU（円）</label><input type="number" placeholder="例: 17500" onchange="sg('pr_arpu_est',this.value);updArpu()"></div>
     </div>
   </div>
 
@@ -247,27 +246,17 @@ body{background:#fff;}
   <div class="card">
     <div class="card-ttl"><span class="pill pill-net">NET</span>ネット予約 目標</div>
     <div class="fg fg2">
-      <div class="f"><label>ネット件数目標</label><input type="number" placeholder="例: 3" oninput="sg('net_cnt',this.value)"></div>
-      <div class="f"><label>平均受注率（%）</label><input type="number" placeholder="例: 50" oninput="sg('net_rate',this.value)"></div>
+      <div class="f"><label>ネット件数目標</label><input type="number" placeholder="例: 3" onchange="sg('net_cnt',this.value)"></div>
+      <div class="f"><label>平均受注率（%）</label><input type="number" placeholder="例: 50" onchange="sg('net_rate',this.value)"></div>
     </div>
   </div>
 
   <!-- 売上サマリー -->
   <div class="card">
     <div class="card-ttl"><span class="pill pill-rev">売上</span>月間売上 サマリー</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <div style="background:#F9F9F9;border-radius:12px;padding:14px;">
-        <div style="font-size:10px;font-weight:900;color:var(--mu);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">合計売上目標</div>
-        <div style="font-family:var(--fm);font-size:18px;font-weight:700;" id="totalRevGoal">—</div>
-      </div>
-      <div style="background:#FFFDE7;border:2px solid var(--yl);border-radius:12px;padding:14px;">
-        <div style="font-size:10px;font-weight:900;color:var(--mu);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">売上着地読み</div>
-        <div style="font-family:var(--fm);font-size:18px;font-weight:700;" id="totalRevLanding">—</div>
-      </div>
-    </div>
-    <div id="revProgressWrap" style="margin-top:12px;">
-      <div class="pb-label"><span>達成率</span><span id="revPct">0%</span></div>
-      <div class="pb-track"><div class="pb-fill" id="revPbFill" style="width:0%;background:linear-gradient(90deg,var(--ok),#4ade80)"></div></div>
+    <div style="background:#F9F9F9;border-radius:12px;padding:14px;">
+      <div style="font-size:10px;font-weight:900;color:var(--mu);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">合計売上目標</div>
+      <div style="font-family:var(--fm);font-size:18px;font-weight:700;" id="totalRevGoal">—</div>
     </div>
   </div>
 
@@ -275,17 +264,16 @@ body{background:#fff;}
   <div class="card">
     <div class="card-ttl"><span class="pill pill-sw">切替</span>切替アップセル 目標</div>
     <div class="fg fg2" style="margin-bottom:12px">
-      <div class="f"><label>切替件数目標</label><input type="number" placeholder="例: 3" oninput="sg('sw_cnt',this.value)"></div>
-      <div class="f"><label>切替売上目標（円）</label><input type="number" placeholder="例: 45000" oninput="sg('sw_rev',this.value);updArpu()"></div>
+      <div class="f"><label>切替件数目標</label><input type="number" placeholder="例: 3" onchange="sg('sw_cnt',this.value)"></div>
+      <div class="f"><label>切替売上目標（円）</label><input type="number" placeholder="例: 45000" onchange="sg('sw_rev',this.value);updArpu()"></div>
     </div>
     <div class="arpu-box" style="margin-bottom:12px">
       <span class="arpu-label">予算ARPU（切替売上 ÷ 件数）</span>
       <span class="arpu-val" id="swArpuBudget">—</span>
     </div>
-    <div class="fg fg3">
-      <div class="f"><label>平均受注率（%）</label><input type="number" placeholder="例: 40" oninput="sg('sw_rate',this.value)"></div>
-      <div class="f"><label>想定ARPU（円）</label><input type="number" placeholder="例: 12000" oninput="sg('sw_arpu_est',this.value);updArpu()"></div>
-      <div class="f"><label>売上見込み試算</label><input type="text" id="swRevLanding" disabled></div>
+    <div class="fg fg2">
+      <div class="f"><label>平均受注率（%）</label><input type="number" placeholder="例: 40" onchange="sg('sw_rate',this.value)"></div>
+      <div class="f"><label>想定ARPU（円）</label><input type="number" placeholder="例: 12000" onchange="sg('sw_arpu_est',this.value);updArpu()"></div>
     </div>
   </div>
 
@@ -350,14 +338,16 @@ body{background:#fff;}
   <!-- Yomi card (re-rendered) -->
   <div id="yomiCard"></div>
 
-  <!-- 商談化率（行動 → 商談） ← ここに移動 -->
+  <!-- 進行中から何件商談いくか（手打ち） -->
   <div class="neg-rate-row">
-    <label>商談化率（行動 → 商談）</label>
+    <label>進行中から何件商談いくか（手打ち）</label>
     <div class="f">
       <label>neg</label>
-      <input type="number" placeholder="例: 20" value="20" min="1" max="100" oninput="ST.negRate=+this.value||20;update()">
+      <input type="number" placeholder="空白=自動" id="inNegInput" min="0"
+        onchange="ST.inNegManual=this.value===''?null:+this.value;update()"
+        onkeydown="if(event.key==='Enter'){ST.inNegManual=this.value===''?null:+this.value;update()}">
     </div>
-    <span style="font-size:14px;font-weight:800;color:var(--mu)">%</span>
+    <span style="font-size:14px;font-weight:800;color:var(--mu)">件</span>
   </div>
 
   <!-- 計算ブロック（合計・全種別） -->
@@ -383,7 +373,7 @@ const ST = {
     net: { zumi:'', a:'', b:'', c:'', d:'', mis:'' },
     sw:  { zumi:'', a:'', b:'', c:'', d:'', mis:'' },
   },
-  negRate: 20,
+  inNegManual: null,
   weeksLeft: 3,
   strategy: 'set',
   setRatio: 100,
@@ -502,18 +492,18 @@ function calcAll() {
     ? (pr.goalCnt * pr.rate + net.goalCnt * net.rate + sw.goalCnt * sw.rate) / totalGoalCnt
     : 0.2;
 
-  // 進行中から商談行く件数（済+A+B+C+D の合計）
-  const inNeg = ['pr','net','sw'].reduce((s, t) =>
+  // 進行中から商談行く件数（手打ち優先、なければ済+A+B+C+D の合計）
+  const inNegCalc = ['pr','net','sw'].reduce((s, t) =>
     s + ['zumi','a','b','c','d'].reduce((ss, k) => ss + nv(ST.yomi[t][k]), 0), 0);
+  const inNeg = ST.inNegManual !== null ? ST.inNegManual : inNegCalc;
   const totalMis = ['pr','net','sw'].reduce((s, t) => s + nv(ST.yomi[t].mis), 0);
 
   // 残商談・月間商談数
   const newMeetings     = weightedRate > 0 ? cl(totalDiff / weightedRate) : 0;
   const monthlyMeetings = inNeg + newMeetings;
 
-  // 行動数
-  const negRateD     = Math.max(0.01, ST.negRate) / 100;
-  const newActions   = cl(newMeetings / negRateD);
+  // 行動数（不足商談数がそのまま新規行動数、未商談はフォロー行動）
+  const newActions   = newMeetings;
   const followActs   = totalMis;
   const totalActions = newActions + followActs;
   const weeklyActions= cl(totalActions / wk);
@@ -521,8 +511,8 @@ function calcAll() {
   return { pr, net, sw, wk, prArpu, swArpu, prArpuBudget, swArpuBudget,
            goalRev, landRev, revPct,
            totalGoalCnt, totalLanding, totalDiff, weightedRate,
-           inNeg, totalMis, newMeetings, monthlyMeetings,
-           negRateD, newActions, followActs, totalActions, weeklyActions };
+           inNeg, inNegCalc, totalMis, newMeetings, monthlyMeetings,
+           newActions, followActs, totalActions, weeklyActions };
 }
 
 function calcSeg(c) {
@@ -592,18 +582,7 @@ function updArpu() {
   $('prArpuBudget').textContent = prCnt > 0 && prRev > 0 ? yen(prRev / prCnt) : '—';
   $('swArpuBudget').textContent = swCnt > 0 && swRev > 0 ? yen(swRev / swCnt) : '—';
 
-  $('prRevLanding').value = c.prArpu && c.pr ? yen(c.pr.landing * c.prArpu) : '—';
-  $('swRevLanding').value = c.swArpu && c.sw ? yen(c.sw.landing * c.swArpu) : '—';
-
-  $('totalRevGoal').textContent    = c.goalRev > 0 ? yen(c.goalRev) : '—';
-  $('totalRevLanding').textContent = c.landRev > 0 ? yen(c.landRev) : '—';
-  $('revPct').textContent          = c.revPct.toFixed(0) + '%';
-  $('revPbFill').style.width       = c.revPct + '%';
-  $('revPbFill').style.background  = c.revPct >= 100
-    ? 'linear-gradient(90deg,#16a34a,#4ade80)'
-    : c.revPct >= 70
-    ? 'linear-gradient(90deg,#d97706,#fbbf24)'
-    : 'linear-gradient(90deg,#dc2626,#f87171)';
+  $('totalRevGoal').textContent = c.goalRev > 0 ? yen(c.goalRev) : '—';
 }
 
 // ── RENDER: YOMI CARD ──
@@ -620,7 +599,8 @@ function renderYomiCard() {
       <div class="yb-name">${d.label}</div>
       <div class="yb-pct">${d.pctLabel}</div>
       <input type="number" placeholder="0" value="${yd[d.key]}"
-        oninput="setYomi('${t}','${d.key}',this.value)" min="0">
+        onchange="setYomi('${t}','${d.key}',this.value)"
+        onkeydown="if(event.key==='Enter')setYomi('${t}','${d.key}',this.value)" min="0">
     </div>`).join('');
 
   const rows = YOMI_DEF.filter(d => d.key !== 'mis' && nv(yd[d.key]) > 0).map(d => {
@@ -648,9 +628,12 @@ function renderYomiCard() {
 // ── RENDER: CALC BLOCK (Tab 2) ──
 function renderCalcBlock() {
   const c = calcAll();
-  const { inNeg, totalLanding, totalGoalCnt, totalDiff, weightedRate, newMeetings, monthlyMeetings, totalMis } = c;
+  const { inNeg, inNegCalc, totalLanding, totalGoalCnt, totalDiff, weightedRate, newMeetings, monthlyMeetings, totalMis } = c;
   const shortageOk = totalDiff <= 0;
   const wRatePct = Math.round(weightedRate * 100);
+  const inNegHint = ST.inNegManual !== null
+    ? `<span style="font-size:10px;color:var(--wa);margin-left:6px">手打ち（ヨミ自動:${inNegCalc}件）</span>`
+    : `<span style="font-size:10px;color:var(--mu);margin-left:6px">ヨミ自動計算</span>`;
 
   $('calcBlock').innerHTML = `
     <div class="calc-blk">
@@ -658,7 +641,7 @@ function renderCalcBlock() {
       <div class="calc-blk-body">
 
         <div class="cb-spotlight">
-          <span>進行中から何件商談行くか</span>
+          <span>進行中から何件商談行くか${inNegHint}</span>
           <strong>${inNeg} 件</strong>
         </div>
 
@@ -715,7 +698,7 @@ function renderResultTab() {
     <div class="hero-card">
       <div class="hero-label">週あたり合計行動数</div>
       <div class="hero-val">${weeklyActions}<span class="hero-unit">件 / 週</span></div>
-      <div class="hero-sub">月間 ${totalActions}件 ／ 商談${monthlyMeetings}件×商談化率${ST.negRate}% ＋フォロー${followActs}件</div>
+      <div class="hero-sub">月間 ${totalActions}件 ／ 進行中${c.inNeg}件 ＋ 不足${c.newMeetings}件 ＋ フォロー${followActs}件</div>
     </div>`;
 
   // RC3: 月間行動 / 月間商談 / 残り週
