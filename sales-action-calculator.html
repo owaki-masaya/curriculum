@@ -218,7 +218,8 @@ body{background:#fff;}
 .user-chip{padding:9px 18px;border-radius:20px;font-size:13px;font-weight:800;cursor:pointer;border:2px solid var(--bdr2);background:#FAFAFA;color:var(--tx);font-family:var(--ff);transition:all .15s;}
 .user-chip:hover{border-color:var(--yd);background:var(--yl);}
 /* ── User Badge ── */
-.ubw{position:absolute;top:18px;right:20px;z-index:10;}
+.ubw{position:absolute;top:18px;right:20px;z-index:10;display:flex;align-items:center;gap:8px;}
+.save-hd-btn{background:var(--y);border:none;border-radius:16px;padding:8px 16px;font-size:12px;font-weight:900;cursor:pointer;font-family:var(--ff);color:#1a1a1a;box-shadow:0 2px 8px rgba(255,214,0,.35);white-space:nowrap;}
 .ub{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.9);border-radius:20px;padding:6px 12px 6px 8px;cursor:pointer;border:2px solid rgba(0,0,0,.1);transition:background .15s;user-select:none;}
 .ub:hover{background:#fff;}
 .ub-av{width:26px;height:26px;border-radius:50%;background:#1a1a1a;color:var(--y);font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -287,6 +288,7 @@ body{background:#fff;}
   <div class="month-tag" id="monthTag">—</div>
   <!-- User Badge -->
   <div class="ubw" id="userBadgeWrap" style="display:none">
+    <button class="save-hd-btn" onclick="openRecModal()">💾 今月を保存</button>
     <div class="ub" onclick="toggleUserMenu()">
       <div class="ub-av" id="userBadgeAv">?</div>
       <span class="ub-nm" id="userBadgeNm">—</span>
