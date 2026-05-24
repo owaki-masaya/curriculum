@@ -15,6 +15,7 @@ body{background:#fff;}
   --bdr:#F0F0F0;--bdr2:#E8E8E8;
   --ok:#16a34a;--wa:#d97706;--ng:#dc2626;
   --pr:#2563EB;--net:#0891b2;--sw:#7c3aed;
+  --mis:#26C6DA;--misd:#00ACC1;--misll:#E0F7FA;
   --ff:'Nunito',sans-serif;--fm:'JetBrains Mono',monospace;
   --sh:0 2px 12px rgba(0,0,0,.07);
   --sh2:0 4px 24px rgba(255,214,0,.35);
@@ -399,7 +400,8 @@ const ST = {
   },
   inNegManual: null,
   weeksLeft: 3,
-  misTarget: { pr: '', net: '', sw: '' },
+  misTarget:  { pr: '', net: '', sw: '' },
+  actionAdj:  { pr: '', net: '', sw: '' },
 };
 
 const YOMI_DEF = [
@@ -440,6 +442,10 @@ function setYomi(type, key, val) {
 }
 function setMisTarget(type, val) {
   ST.misTarget[type] = val;
+  renderResultTab();
+}
+function setActionAdj(type, val) {
+  ST.actionAdj[type] = val;
   renderResultTab();
 }
 
@@ -487,10 +493,11 @@ function calcAll() {
   const newMeetings     = prNewMeet + netNewMeet + swNewMeet;
   const monthlyMeetings = inNeg + newMeetings;
 
-  // 行動数（必要未商談数 ＋ フォロー行動）
-  const newActions    = newMeetings;
-  const followActs    = totalMis;
-  const totalActions  = newActions + followActs;
+  // 行動数（必要未商談数のみ。フォローは除く）
+  const newActions   = newMeetings;
+  const followActs   = totalMis;
+  const adjTotal     = nv(ST.actionAdj.pr) + nv(ST.actionAdj.net) + nv(ST.actionAdj.sw);
+  const totalActions = newActions + adjTotal;
   const weeklyActions = cl(totalActions / wk);
 
   // 未商談計画 × 受注率 = 期待着地追加分（タワー・プログレスバー用）
@@ -504,7 +511,7 @@ function calcAll() {
   return { pr, net, sw, wk, prArpu, swArpu, prArpuBudget, swArpuBudget,
            goalRev, landRev, revPct,
            inNeg, inNegCalc, totalMis, newMeetings, monthlyMeetings,
-           newActions, followActs, totalActions, weeklyActions,
+           newActions, followActs, adjTotal, totalActions, weeklyActions,
            prExtLanding, netExtLanding, swExtLanding, prExtPct, netExtPct, swExtPct };
 }
 
@@ -633,43 +640,120 @@ function renderShortageCard(c) {
   ].filter(x => x.t.goalCnt > 0);
   if (!types.length) return '';
 
-  const rows = types.map(({ label, t, pillCls }) => {
-    const shortfall = Math.max(0, t.goalCnt - t.landing);
-    const needed    = t.newOpps;
-    const achieved  = t.landing >= t.goalCnt;
+  const rows = types.map(({ key, label, t, pillCls }) => {
+    const shortfall  = Math.max(0, t.goalCnt - t.landing);
+    const needed     = t.newOpps;
+    const achieved   = t.landing >= t.goalCnt;
+    const misCnt     = nv(ST.misTarget[key]);
+    const adjCnt     = nv(ST.actionAdj[key]);
+    const extLand    = t.landing + misCnt * t.rate;
+    const extPct     = t.goalCnt > 0 ? extLand / t.goalCnt * 100 : 0;
+    const isOver     = extPct > 100;
+    const extDiff    = Math.max(0, t.goalCnt - extLand);
+    const excessCnt  = isOver ? f1(extLand - t.goalCnt) : null;
+    const pctCol     = extPct>=100?'var(--ok)':extPct>=70?'var(--wa)':'var(--ng)';
+    const basePct    = isOver ? 100 : t.goalCnt > 0 ? Math.min(100, t.landing / t.goalCnt * 100) : 0;
+    const misBarW    = isOver ? 0 : Math.min(100 - basePct, t.goalCnt > 0 ? misCnt * t.rate / t.goalCnt * 100 : 0);
+    const pctTxt     = isOver ? `${extPct.toFixed(0)}%（+${excessCnt}件超過）` : `${extPct.toFixed(0)}%`;
+    const arpu       = key === 'pr' ? c.prArpu : key === 'sw' ? c.swArpu : 0;
+    const misRev     = arpu > 0 && misCnt > 0 ? misCnt * arpu : 0;
+
     return `
-      <div style="background:#FAFAFA;border:2px solid var(--bdr2);border-radius:12px;padding:12px 14px">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+      <div style="background:#FAFAFA;border:2px solid var(--bdr2);border-radius:14px;padding:14px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
           <span class="pill ${pillCls}">${label}</span>
           ${achieved ? `<span style="font-size:11px;font-weight:900;color:var(--ok)">✅ 目標達成済み</span>` : ''}
         </div>
-        <div style="display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;font-size:12px;font-weight:700;color:#333;line-height:2">
-          <span>着地 <span style="font-family:var(--fm);font-size:17px;color:#1565C0">${f1(t.landing)}</span>件</span>
+        <!-- 不足算出 formula -->
+        <div style="display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;font-size:12px;font-weight:700;color:#333;line-height:2;margin-bottom:12px">
+          <span>着地 <span style="font-family:var(--fm);font-size:15px;color:#1565C0">${f1(t.landing)}</span>件</span>
           <span style="color:var(--mu)">／ 目標</span>
-          <span><span style="font-family:var(--fm);font-size:17px">${t.goalCnt}</span>件</span>
+          <span><span style="font-family:var(--fm);font-size:15px">${t.goalCnt}</span>件</span>
           ${!achieved ? `
             <span style="color:var(--mu)">→ 不足</span>
-            <span style="color:var(--ng)"><span style="font-family:var(--fm);font-size:17px">${f1(shortfall)}</span>件</span>
+            <span style="color:var(--ng)"><span style="font-family:var(--fm);font-size:15px">${f1(shortfall)}</span>件</span>
             <span style="color:var(--mu)">÷ 受注率${(t.rate*100).toFixed(0)}%</span>
             <span style="color:var(--mu)">＝</span>
-            <span style="background:var(--ng);color:#fff;border-radius:6px;padding:2px 10px"><span style="font-family:var(--fm);font-size:17px">${needed}</span>件の商談が必要</span>
+            <span style="background:var(--ng);color:#fff;border-radius:6px;padding:2px 8px"><span style="font-family:var(--fm);font-size:15px">${needed}</span>件の商談が必要</span>
           ` : ''}
+        </div>
+        <!-- 手打ち入力 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div class="f">
+            <label>組む商談数（未商談）</label>
+            <input type="number" placeholder="${needed}" value="${ST.misTarget[key]}"
+              onchange="setMisTarget('${key}',this.value)"
+              onkeydown="if(event.key==='Enter')setMisTarget('${key}',this.value)" min="0">
+          </div>
+          <div class="f">
+            <label>行動数 補正</label>
+            <input type="number" placeholder="0" value="${ST.actionAdj[key]}"
+              onchange="setActionAdj('${key}',this.value)"
+              onkeydown="if(event.key==='Enter')setActionAdj('${key}',this.value)">
+          </div>
+        </div>
+        <!-- 売上見込み（PR/切替のみ） -->
+        ${misRev > 0 ? `
+        <div style="background:#F0F4FF;border:1.5px solid #BFCFFF;border-radius:10px;padding:8px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:10px;font-weight:900;color:var(--mu)">売上見込み（${misCnt}件 × ARPU ${yen(arpu)}）</span>
+          <span style="font-family:var(--fm);font-size:14px;font-weight:700;color:#1a1a1a">${yen(misRev)}</span>
+        </div>` : (arpu > 0 && misCnt === 0 ? `<div style="background:#F5F5F5;border:1.5px solid var(--bdr2);border-radius:10px;padding:7px 12px;margin-bottom:8px;font-size:10px;color:var(--mu);font-weight:800">件数を入力すると売上見込みを表示（ARPU: ${yen(arpu)}）</div>` : '')}
+        <!-- 着地見込み -->
+        <div style="background:${isOver?'#F0FDF4':'var(--misll)'};border:2px solid ${isOver?'#86EFAC':'var(--misd)'};border-radius:10px;padding:10px 12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+            <span style="font-size:10px;font-weight:900;color:var(--mu)">着地見込み（済+進行中+未商談）</span>
+            <span style="font-family:var(--fm);font-size:15px;font-weight:700;color:${pctCol}">${f1(extLand)}件</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+            <span style="font-size:10px;color:var(--mu);font-weight:700">目標 ${t.goalCnt}件 に対して</span>
+            <span style="font-family:var(--fm);font-size:15px;font-weight:700;color:${pctCol}">${pctTxt}</span>
+          </div>
+          <div style="height:7px;background:#fff;border-radius:7px;overflow:hidden;position:relative">
+            ${isOver
+              ? `<div style="position:absolute;left:0;top:0;height:100%;width:100%;background:var(--ok)"></div>`
+              : `<div style="position:absolute;left:0;top:0;height:100%;width:${basePct}%;background:#90CAF9"></div>
+                 ${misBarW>0?`<div style="position:absolute;left:${basePct}%;top:0;height:100%;width:${misBarW}%;background:var(--mis)"></div>`:''}`
+            }
+          </div>
+          ${isOver
+            ? `<div style="margin-top:7px;font-size:11px;color:var(--ok);font-weight:900">✅ 目標達成見込み（+${excessCnt}件 超過）</div>`
+            : extDiff > 0
+              ? `<div style="margin-top:7px;font-size:11px;color:var(--ng);font-weight:900">まだ ${f1(extDiff)}件 不足</div>`
+              : `<div style="margin-top:7px;font-size:11px;color:var(--ok);font-weight:900">✅ 目標達成見込み</div>`
+          }
         </div>
       </div>`;
   }).join('');
 
-  const totalNeeded = types.reduce((s, { t }) =>
-    s + (t.goalCnt > 0 && t.landing < t.goalCnt ? t.newOpps : 0), 0);
+  const totalMis   = types.reduce((s, { key }) => s + nv(ST.misTarget[key]), 0);
+  const totalAdj   = types.reduce((s, { key }) => s + nv(ST.actionAdj[key]), 0);
+  const grandTotal = c.inNeg + totalMis + totalAdj;
 
   return `
     <div class="card" style="margin-bottom:14px">
-      <div class="card-ttl">不足商談 自動算出</div>
+      <div class="card-ttl">不足商談 自動算出 ／ 行動計画 入力</div>
       <div style="display:flex;flex-direction:column;gap:10px">${rows}</div>
-      ${totalNeeded > 0 ? `
-        <div style="margin-top:10px;padding:12px 16px;background:#FFF3E0;border:2px solid #FFCC80;border-radius:12px;display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:12px;font-weight:900;color:#E65100">合計 必要商談数</span>
-          <span style="font-family:var(--fm);font-size:26px;font-weight:700;color:#E65100">${totalNeeded}<span style="font-size:13px;margin-left:2px">件</span></span>
-        </div>` : ''}
+      <div style="margin-top:12px;padding:14px 16px;background:#FFF3E0;border:2px solid #FFCC80;border-radius:14px">
+        <div style="font-size:11px;font-weight:900;color:#E65100;margin-bottom:10px;letter-spacing:.06em;text-transform:uppercase">月間 商談・行動 合計</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:#7a4500">
+            <span>進行中 商談数</span>
+            <span style="font-family:var(--fm)">${c.inNeg}件</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:#7a4500">
+            <span>未商談（組む件数 合計）</span>
+            <span style="font-family:var(--fm)">${totalMis}件</span>
+          </div>
+          ${totalAdj > 0 ? `<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:#7a4500">
+            <span>行動数 補正 合計</span>
+            <span style="font-family:var(--fm)">+${totalAdj}件</span>
+          </div>` : ''}
+          <div style="border-top:2px dashed #FFCC80;margin:2px 0;padding-top:8px;display:flex;justify-content:space-between;align-items:baseline">
+            <span style="font-size:13px;font-weight:900;color:#E65100">合計 必要商談・行動数</span>
+            <span style="font-family:var(--fm);font-size:26px;font-weight:700;color:#E65100">${grandTotal}<span style="font-size:13px;margin-left:2px">件</span></span>
+          </div>
+        </div>
+      </div>
     </div>`;
 }
 
@@ -683,7 +767,7 @@ function renderResultTab() {
     return;
   }
 
-  const { weeklyActions, totalActions, monthlyMeetings, newActions, followActs, wk, pr, net, sw } = c;
+  const { weeklyActions, totalActions, monthlyMeetings, newActions, adjTotal, wk, pr, net, sw } = c;
 
   // Alert
   const alCls = weeklyActions === 0 ? 'al-ok' : weeklyActions <= 5 ? 'al-wa' : 'al-ng';
@@ -692,11 +776,13 @@ function renderResultTab() {
     : `${weeklyActions <= 5 ? '⚠️' : '🔴'} 週合計 ${weeklyActions} 件の行動が必要です。`;
 
   // Hero
+  const misTotalStr = c.newMeetings > 0 ? ` ＋ 未商談${c.newMeetings}件` : '';
+  const adjStr = adjTotal > 0 ? ` ＋ 補正${adjTotal}件` : '';
   const heroHtml = `
     <div class="hero-card">
       <div class="hero-label">週あたり合計行動数</div>
       <div class="hero-val">${weeklyActions}<span class="hero-unit">件 / 週</span></div>
-      <div class="hero-sub">月間 ${totalActions}件 ／ 進行中${c.inNeg}件 ＋ 不足${c.newMeetings}件 ＋ フォロー${followActs}件</div>
+      <div class="hero-sub">月間 ${totalActions}件 ／ 進行中${c.inNeg}件${misTotalStr}${adjStr}</div>
     </div>`;
 
   // RC3: 月間行動 / 月間商談 / 残り週
@@ -705,7 +791,7 @@ function renderResultTab() {
       <div class="rc">
         <div class="rl">月間 総行動数</div>
         <div class="rv">${totalActions}<span class="ru">件</span></div>
-        <div class="rs">新規${newActions}件 ＋ フォロー${followActs}件</div>
+        <div class="rs">未商談${newActions}件${adjTotal>0?' ＋ 補正'+adjTotal+'件':''}</div>
       </div>
       <div class="rc">
         <div class="rl">月間 商談数</div>
@@ -743,7 +829,7 @@ function renderResultTab() {
           ${isOver
             ? `<div style="position:absolute;left:0;top:0;height:100%;width:100%;background:var(--ok)"></div>`
             : `<div style="position:absolute;left:0;top:0;height:100%;width:${basePct}%;background:${pbGrad[key]}"></div>
-               ${misWidth>0?`<div style="position:absolute;left:${basePct}%;top:0;height:100%;width:${misWidth}%;background:var(--y)"></div>`:''}`
+               ${misWidth>0?`<div style="position:absolute;left:${basePct}%;top:0;height:100%;width:${misWidth}%;background:var(--mis)"></div>`:''}`
           }
         </div>
       </div>`;
@@ -753,9 +839,6 @@ function renderResultTab() {
 
   // Yomi Tower
   const towerHtml = renderTower(c);
-
-  // 未商談 計画入力
-  const misInputHtml = renderMisInput(c);
 
   // 週次シミュレーション（2週 vs 3週）
   const weekCmpHtml = totalActions > 0 ? `
@@ -773,7 +856,7 @@ function renderResultTab() {
           <div style="font-size:12px;color:rgba(26,26,26,.55);font-weight:700;margin-top:6px">件 / 週</div>
         </div>
       </div>
-      <div style="text-align:center;font-size:11px;color:var(--mu);font-weight:700">月間総行動数: ${totalActions}件（新規${newActions}件 ＋ フォロー${followActs}件）</div>
+      <div style="text-align:center;font-size:11px;color:var(--mu);font-weight:700">月間総行動数: ${totalActions}件</div>
     </div>` : '';
 
   // Week plan
@@ -781,7 +864,7 @@ function renderResultTab() {
 
   $('tab-result').innerHTML = `
     <div class="al ${alCls}">${alMsg}</div>
-    ${renderShortageCard(c)}${heroHtml}${weekCmpHtml}${rc3Html}${progHtml}${towerHtml}${misInputHtml}${wkHtml}`;
+    ${renderShortageCard(c)}${heroHtml}${weekCmpHtml}${rc3Html}${progHtml}${towerHtml}${wkHtml}`;
 }
 
 // ── TOWER ──
@@ -844,8 +927,8 @@ function renderTower(c) {
           <div style="flex:0 0 ${dh}px;background:#EEF6FF;display:flex;align-items:center;justify-content:center;${dh>2?'border-bottom:1.5px dashed #90CAF9':''}">
             ${dh >= 22 && extDiff > 0 ? `<span style="font-size:10px;font-weight:800;color:#5BA3D9;font-family:var(--fm)">差分 ${fv(t,extDiff)}</span>` : ''}
           </div>
-          ${mh > 0 ? `<div style="flex:0 0 ${mh}px;background:var(--y);display:flex;align-items:center;justify-content:center;border-bottom:1.5px dashed var(--yd)">
-            ${mh >= 16 ? `<span style="font-size:9px;font-weight:900;color:rgba(26,26,26,.7);font-family:var(--fm)">未商談 ${fv(t,t.misL)}</span>` : ''}
+          ${mh > 0 ? `<div style="flex:0 0 ${mh}px;background:var(--mis);display:flex;align-items:center;justify-content:center;border-bottom:1.5px dashed var(--misd)">
+            ${mh >= 16 ? `<span style="font-size:9px;font-weight:900;color:#fff;font-family:var(--fm)">未商談 ${fv(t,t.misL)}</span>` : ''}
           </div>` : ''}
           ${ph > 0 ? `<div style="flex:0 0 ${ph}px;background:#90CAF9;display:flex;align-items:center;justify-content:center">
             ${ph >= 18 ? `<span style="font-size:10px;font-weight:800;color:#fff;font-family:var(--fm)">進行中 ${fv(t,t.prog)}</span>` : ''}
@@ -854,7 +937,7 @@ function renderTower(c) {
             ${zh >= 18 ? `<span style="font-size:10px;font-weight:800;color:#fff;font-family:var(--fm)">済 ${fv(t,t.zumi)}</span>` : ''}
           </div>` : ''}
         </div>
-        <div style="background:var(--yll);border:2px solid var(--yl);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:5px">
+        <div style="background:var(--misll);border:2px solid var(--misd);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:5px">
           <div style="display:flex;justify-content:space-between;align-items:baseline">
             <span style="font-size:10px;font-weight:900;color:var(--mu)">着地見込み（未商談含）</span>
             <span style="font-family:var(--fm);font-size:14px;font-weight:700;color:${pctCol}">${fv(t,extLand)}</span>
@@ -866,14 +949,14 @@ function renderTower(c) {
             </div>
             <div style="height:5px;background:#fff;border-radius:5px;overflow:hidden;position:relative">
               <div style="position:absolute;left:0;top:0;height:100%;border-radius:5px;width:${basePct}%;background:#1565C0"></div>
-              ${misBarW>0?`<div style="position:absolute;left:${basePct}%;top:0;height:100%;width:${misBarW}%;background:var(--y)"></div>`:''}
+              ${misBarW>0?`<div style="position:absolute;left:${basePct}%;top:0;height:100%;width:${misBarW}%;background:var(--mis)"></div>`:''}
             </div>
           </div>
-          ${extDiff > 0 ? `<div style="display:flex;justify-content:space-between;padding-top:5px;border-top:1px dashed var(--yd)"><span style="font-size:10px;font-weight:900;color:var(--ng)">差分（不足）</span><span style="font-family:var(--fm);font-size:13px;font-weight:700;color:var(--ng)">${fv(t,extDiff)}</span></div>` : ''}
+          ${extDiff > 0 ? `<div style="display:flex;justify-content:space-between;padding-top:5px;border-top:1px dashed var(--misd)"><span style="font-size:10px;font-weight:900;color:var(--ng)">差分（不足）</span><span style="font-family:var(--fm);font-size:13px;font-weight:700;color:var(--ng)">${fv(t,extDiff)}</span></div>` : ''}
           ${extDiff <= 0 ? `<div style="background:var(--ok);border-radius:8px;padding:7px 10px;text-align:center;font-size:11px;font-weight:900;color:#fff">✅ 目標達成見込み</div>` : ''}
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
-          ${[['済','#1565C0'],['進行中','#90CAF9'],['未商談計画','var(--y)'],['差分','#EEF6FF','1.5px solid #90CAF9']].map(([l,c,b])=>`<div style="display:flex;align-items:center;gap:3px"><div style="width:8px;height:8px;border-radius:2px;background:${c};border:${b||'none'}"></div><span style="font-size:9px;font-weight:800;color:var(--mu)">${l}</span></div>`).join('')}
+          ${[['1.受注済み','#1565C0'],['2.進行中商談','#90CAF9'],['3.未商談からの獲得','var(--mis)'],['差分','#EEF6FF','1.5px solid #90CAF9']].map(([l,c,b])=>`<div style="display:flex;align-items:center;gap:3px"><div style="width:8px;height:8px;border-radius:2px;background:${c};border:${b||'none'}"></div><span style="font-size:9px;font-weight:800;color:var(--mu)">${l}</span></div>`).join('')}
         </div>
       </div>`;
   }).join('');
@@ -964,32 +1047,27 @@ function renderMisInput(c) {
 // ── WEEK PLAN ──
 function renderWeekPlan(c) {
   if (c.weeklyActions === 0) return '';
-  const { wk, newActions, followActs, monthlyMeetings } = c;
+  const { wk, newActions, monthlyMeetings } = c;
   const newPerWk  = cl(newActions / wk);
-  const folPerWk  = cl(followActs / wk);
   const meetPerWk = cl(monthlyMeetings / wk);
-  const cols = `44px 1fr 1fr 1fr 1fr 64px`;
+  const cols = `44px 1fr 1fr 64px`;
   let rows = '', cumul = 0;
   for (let i = 0; i < wk; i++) {
-    const wN = i < wk-1 ? newPerWk  : Math.max(0, newActions    - newPerWk  * (wk-1));
-    const wF = i < wk-1 ? folPerWk  : Math.max(0, followActs    - folPerWk  * (wk-1));
-    const wM = i < wk-1 ? meetPerWk : Math.max(0, monthlyMeetings - meetPerWk * (wk-1));
-    const wT = wN + wF;
-    cumul += wT;
+    const wN = i < wk-1 ? newPerWk  : Math.max(0, newActions       - newPerWk  * (wk-1));
+    const wM = i < wk-1 ? meetPerWk : Math.max(0, monthlyMeetings  - meetPerWk * (wk-1));
+    cumul += wN;
     rows += `<div class="wk-row" style="grid-template-columns:${cols}">
       <span class="wk-n">W${i+1}</span>
       <span class="wk-v">${wN}件</span>
-      <span class="wk-v">${wF}件</span>
       <span class="wk-v" style="color:var(--sw);font-weight:800">${wM}件</span>
-      <span class="wk-v">${wT}件</span>
       <span class="wk-total">${cumul}件</span>
     </div>`;
   }
   return `
     <div class="wk-plan" style="margin-top:14px">
       <div class="wk-head" style="grid-template-columns:${cols}">
-        <span>週</span><span>新規行動</span><span>フォロー</span>
-        <span style="color:var(--sw)">商談数</span><span>行動計</span><span>累計</span>
+        <span>週</span><span>行動数</span>
+        <span style="color:var(--sw)">商談数</span><span>累計</span>
       </div>
       ${rows}
     </div>`;
@@ -1012,6 +1090,7 @@ function getUserData() {
     inNegManual: ST.inNegManual,
     weeksLeft:   ST.weeksLeft,
     misTarget:   JSON.parse(JSON.stringify(ST.misTarget)),
+    actionAdj:   JSON.parse(JSON.stringify(ST.actionAdj)),
   };
 }
 
@@ -1021,6 +1100,7 @@ function applyUserData(data) {
   ST.inNegManual = (data.inNegManual !== undefined) ? data.inNegManual : null;
   ST.weeksLeft   = data.weeksLeft || 3;
   ST.misTarget   = Object.assign({pr:'',net:'',sw:''}, data.misTarget || {});
+  ST.actionAdj   = Object.assign({pr:'',net:'',sw:''}, data.actionAdj || {});
 }
 
 function saveCurrentUser() {
