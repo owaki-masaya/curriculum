@@ -569,9 +569,9 @@ function renderCalcBlock() {
   const { pr, net, sw, inNeg, inNegCalc, newMeetings, monthlyMeetings } = c;
 
   const typeDefs = [
-    { label:'PR',  t:pr,  ratePct:nv(ST.goal.pr_rate),  pillCls:'pill-pr'  },
-    { label:'NET', t:net, ratePct:nv(ST.goal.net_rate), pillCls:'pill-net' },
-    { label:'切替', t:sw, ratePct:nv(ST.goal.sw_rate),  pillCls:'pill-sw'  },
+    { key:'pr',  label:'PR',  t:pr,  ratePct:nv(ST.goal.pr_rate),  pillCls:'pill-pr'  },
+    { key:'net', label:'NET', t:net, ratePct:nv(ST.goal.net_rate), pillCls:'pill-net' },
+    { key:'sw',  label:'切替', t:sw, ratePct:nv(ST.goal.sw_rate),  pillCls:'pill-sw'  },
   ].filter(x => x.t.goalCnt > 0);
 
   if (!typeDefs.length) { $('calcBlock').innerHTML = ''; return; }
@@ -581,14 +581,15 @@ function renderCalcBlock() {
     ? `<span style="font-size:10px;color:var(--wa);margin-left:6px">手打ちあり（ヨミ自動:${inNegCalc}件）</span>`
     : `<span style="font-size:10px;color:var(--mu);margin-left:6px">ヨミ自動計算</span>`;
 
-  const typeBlocks = typeDefs.map(({ label, t, ratePct, pillCls }) => {
+  const typeBlocks = typeDefs.map(({ key, label, t, ratePct, pillCls }) => {
     const shortageOk = t.diff <= 0;
+    const inNegVal   = ST.inNegManual[key];
+    const isManual   = inNegVal !== null;
     return `
       <div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;border:2px solid var(--bdr2)">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
           <span class="pill ${pillCls}">${label}</span>
           <span style="font-size:11px;font-weight:800;color:var(--mu)">目標 ${t.goalCnt}件</span>
-          <span style="font-size:11px;color:var(--mu);margin-left:auto">進行中商談: <strong style="color:var(--tx)">${t.inNeg}</strong>件</span>
         </div>
         <div class="cb-row">
           <span class="cb-label">着地ヨミ（期待値）</span>
@@ -604,6 +605,12 @@ function renderCalcBlock() {
           <span style="font-size:11px;color:var(--mu);font-family:var(--fm)">不足${f1(t.diff)}件 ÷ 受注率${ratePct}%</span>
           <span class="cb-meet-needed">= ${t.newOpps}件 必要（未商談）</span>
         </div>` : ''}
+        <div class="f" style="margin-top:10px">
+          <label>進行中から何件商談いくか${isManual ? ' <span style="color:var(--wa)">(手打ち)</span>' : ''}</label>
+          <input type="number" placeholder="${t.inNeg}（ヨミ自動）" value="${isManual ? inNegVal : ''}"
+            onchange="setInNegType('${key}',this.value)"
+            onkeydown="if(event.key==='Enter')setInNegType('${key}',this.value)" min="0">
+        </div>
       </div>`;
   }).join('');
 
@@ -1279,6 +1286,7 @@ function update() {
   } else {
     showLoginScreen();
   }
+  updArpu();
   renderYomiCard();
   renderCalcBlock();
 })();
