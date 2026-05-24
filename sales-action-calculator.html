@@ -438,8 +438,10 @@ function setActionAdj(type, val) {
 }
 function setInNegType(type, val) {
   ST.inNegManual[type] = val === '' ? null : +val;
-  renderResultTab();
-  if (ST.tab === 'yomi') { renderYomiCard(); renderCalcBlock(); }
+  // calcBlockは再描画しない（入力中にリセットされないよう）
+  // 次回のyomi変更時の再描画でST値が反映される
+  if (ST.tab === 'result') renderResultTab();
+  saveCurrentUser();
 }
 
 // ── CALCULATIONS ──
@@ -608,8 +610,7 @@ function renderCalcBlock() {
         <div class="f" style="margin-top:10px">
           <label>進行中から何件商談いくか${isManual ? ' <span style="color:var(--wa)">(手打ち)</span>' : ''}</label>
           <input type="number" placeholder="${t.inNeg}（ヨミ自動）" value="${isManual ? inNegVal : ''}"
-            onchange="setInNegType('${key}',this.value)"
-            onkeydown="if(event.key==='Enter')setInNegType('${key}',this.value)" min="0">
+            oninput="setInNegType('${key}',this.value)" min="0">
         </div>
       </div>`;
   }).join('');
