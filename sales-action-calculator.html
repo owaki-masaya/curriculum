@@ -20,8 +20,11 @@ body{background:#fff;}
   --sh:0 2px 12px rgba(0,0,0,.07);
   --sh2:0 4px 24px rgba(255,214,0,.35);
 }
-.app{min-height:100vh;background:#fff;font-family:var(--ff);color:var(--tx);padding:32px 16px 80px;}
-.wrap{max-width:900px;margin:0 auto;}
+.app{min-height:100vh;background:#F4F4F5;font-family:var(--ff);color:var(--tx);}
+.hd-outer{max-width:1160px;margin:0 auto;padding:24px 16px 0;}
+.layout{max-width:1160px;margin:0 auto;padding:16px 16px 80px;display:flex;gap:16px;align-items:flex-start;}
+.sidebar{width:230px;flex-shrink:0;position:sticky;top:16px;}
+.main-cnt{flex:1;min-width:0;}
 
 /* header */
 .hd{background:var(--y);border-radius:20px;padding:28px 28px 24px;margin-bottom:24px;position:relative;overflow:hidden;}
@@ -249,6 +252,39 @@ body{background:#fff;}
 .rec-item-name{font-size:12px;font-weight:800;color:var(--tx);}
 .rec-item-date{font-size:10px;color:var(--mu);font-weight:700;}
 .rec-item-del{font-size:10px;color:var(--ng);font-weight:900;padding:2px 6px;border-radius:6px;border:none;background:transparent;cursor:pointer;}
+/* ── SIDEBAR ── */
+.sb-card{background:#fff;border:2px solid var(--bdr);border-radius:16px;padding:14px 12px;margin-bottom:12px;box-shadow:var(--sh);}
+.sb-hd{font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--mu);margin-bottom:10px;}
+.sb-save-btn{width:100%;background:var(--y);border:none;border-radius:10px;padding:9px;font-size:12px;font-weight:900;cursor:pointer;font-family:var(--ff);color:#1a1a1a;margin-bottom:8px;display:block;text-align:center;}
+.sb-empty{font-size:11px;color:#bbb;font-weight:700;padding:6px 0;text-align:center;}
+.sb-rec{display:flex;align-items:center;gap:4px;padding:5px 0;border-bottom:1px solid var(--bdr);}
+.sb-rec:last-child{border-bottom:none;}
+.sb-rec-info{flex:1;cursor:pointer;padding:3px 5px;border-radius:7px;min-width:0;}
+.sb-rec-info:hover{background:#F5F5F5;}
+.sb-rec-name{font-size:12px;font-weight:800;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-rec-date{font-size:10px;color:var(--mu);font-weight:700;}
+.sb-rec-del{font-size:10px;color:var(--ng);font-weight:900;padding:2px 6px;border-radius:6px;border:none;background:transparent;cursor:pointer;flex-shrink:0;}
+.sb-member{margin-bottom:2px;}
+.sb-mem-hd{display:flex;align-items:center;gap:6px;padding:6px 4px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:900;color:var(--tx);user-select:none;}
+.sb-mem-hd:hover{background:#F5F5F5;}
+.sb-mem-av{width:22px;height:22px;border-radius:50%;background:#1a1a1a;color:var(--y);font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sb-mem-name{flex:1;font-size:12px;}
+.sb-mem-arrow{font-size:10px;color:var(--mu);transition:transform .15s;}
+.sb-mem-arrow.open{transform:rotate(90deg);}
+.sb-mem-recs{padding-left:28px;display:none;padding-bottom:4px;}
+.sb-mem-recs.open{display:block;}
+.sb-mem-rec{padding:4px 8px;border-radius:8px;cursor:pointer;margin-bottom:2px;}
+.sb-mem-rec:hover{background:#F5F5F5;}
+.sb-mem-rec-name{font-size:11px;font-weight:800;color:var(--tx);}
+.sb-mem-rec-date{font-size:10px;color:var(--mu);font-weight:700;}
+.sb-mob-btn{display:none;width:100%;background:#fff;border:2px solid var(--bdr2);border-radius:12px;padding:11px 16px;font-size:13px;font-weight:900;cursor:pointer;font-family:var(--ff);color:var(--tx);text-align:left;margin-bottom:12px;}
+@media(max-width:768px){
+  .layout{flex-direction:column;gap:0;padding:12px 12px 80px;}
+  .hd-outer{padding:12px 12px 0;}
+  .sidebar{width:100%;position:static;display:none;}
+  .sidebar.mob-open{display:block;}
+  .sb-mob-btn{display:block;}
+}
 </style>
 </head>
 <body>
@@ -279,7 +315,7 @@ body{background:#fff;}
   </div>
 </div>
 <div class="app">
-<div class="wrap">
+<div class="hd-outer">
 
 <!-- HEADER -->
 <div class="hd" style="position:relative">
@@ -298,14 +334,31 @@ body{background:#fff;}
       <div class="udrop-sec">メンバー切替</div>
       <div id="userDropItems"></div>
       <div class="ud-div"></div>
-      <div class="udrop-sec">月次記録</div>
-      <div class="ud-item" style="color:var(--pr)" onclick="openRecModal()">＋ 今月の活動を保存</div>
-      <div id="recList"></div>
-      <div class="ud-div"></div>
       <div class="ud-item ud-lo" onclick="logout()">ログアウト</div>
     </div>
   </div>
 </div>
+</div><!-- /hd-outer -->
+
+<!-- LAYOUT: sidebar + main -->
+<div class="layout">
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sb-card">
+    <div class="sb-hd">📁 マイ記録</div>
+    <button class="sb-save-btn" onclick="openRecModal()">＋ 今月を保存</button>
+    <div id="sbMyRecs"><div class="sb-empty">記録はありません</div></div>
+  </div>
+  <div class="sb-card">
+    <div class="sb-hd">👥 チームの記録</div>
+    <div id="sbTeamRecs"><div class="sb-empty">—</div></div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-cnt">
+<button class="sb-mob-btn" id="sbMobBtn" onclick="toggleSidebar()">📁 記録・メンバーを見る ▾</button>
 
 <!-- TABS -->
 <div class="tabs">
@@ -404,7 +457,8 @@ body{background:#fff;}
 <!-- ══ TAB 3: 行動計画 ══ -->
 <div id="tab-result" style="display:none"></div>
 
-</div><!-- /wrap -->
+</div><!-- /main-cnt -->
+</div><!-- /layout -->
 </div><!-- /app -->
 
 <script>
@@ -1240,6 +1294,7 @@ function showApp() {
   $('userBadgeNm').textContent = currentUser;
   $('userBadgeAv').textContent = currentUser.charAt(0).toUpperCase();
   renderUserDrop();
+  renderSidebar();
 }
 
 function showLoginScreen() {
@@ -1269,6 +1324,7 @@ function renderUserDrop() {
       <span>${n}</span>${n===currentUser?' <span style="margin-left:auto;font-size:10px;color:var(--ok)">✓</span>':''}
     </div>`).join('');
   renderRecList();
+  renderSidebar();
 }
 
 function toggleUserMenu() { $('userDrop').classList.toggle('open'); }
@@ -1365,6 +1421,90 @@ function renderRecList() {
       </div>
       <button class="rec-item-del" onclick="event.stopPropagation();deleteRecord('${n.replace(/'/g,"\\'")}')">削除</button>
     </div>`).join('');
+}
+
+// ── SIDEBAR ──
+function renderSidebar() {
+  if (!currentUser) return;
+  renderSbMyRecs();
+  renderSbTeamRecs();
+}
+
+function renderSbMyRecs() {
+  const s = loadStore();
+  const recs = s.users[currentUser]?.monthlyRecords || {};
+  const names = Object.keys(recs).sort().reverse();
+  const el = $('sbMyRecs');
+  if (!el) return;
+  if (!names.length) {
+    el.innerHTML = '<div class="sb-empty">保存済みの記録はありません</div>';
+    return;
+  }
+  el.innerHTML = names.map(n => `
+    <div class="sb-rec">
+      <div class="sb-rec-info" onclick="loadRecord('${n.replace(/'/g,"\\'")}')">
+        <div class="sb-rec-name">${n}</div>
+        <div class="sb-rec-date">${recs[n].savedAt}</div>
+      </div>
+      <button class="sb-rec-del" onclick="deleteRecord('${n.replace(/'/g,"\\'")}')">削除</button>
+    </div>`).join('');
+}
+
+function renderSbTeamRecs() {
+  const s = loadStore();
+  const el = $('sbTeamRecs');
+  if (!el) return;
+  const otherUsers = Object.keys(s.users || {}).filter(n => n !== currentUser);
+  if (!otherUsers.length) {
+    el.innerHTML = '<div class="sb-empty">他のメンバーはいません</div>';
+    return;
+  }
+  el.innerHTML = otherUsers.map(name => {
+    const recs = s.users[name]?.monthlyRecords || {};
+    const recNames = Object.keys(recs).sort().reverse();
+    const id = 'sbm-' + name.replace(/[^a-zA-Z0-9]/g, '_');
+    const recItems = recNames.length
+      ? recNames.map(rn => `
+          <div class="sb-mem-rec" onclick="loadMemberRecord('${name.replace(/'/g,"\\'")}','${rn.replace(/'/g,"\\'")}')">
+            <div class="sb-mem-rec-name">${rn}</div>
+            <div class="sb-mem-rec-date">${recs[rn].savedAt}</div>
+          </div>`).join('')
+      : '<div class="sb-empty">記録なし</div>';
+    return `
+      <div class="sb-member">
+        <div class="sb-mem-hd" onclick="toggleSbMember('${id}')">
+          <div class="sb-mem-av">${name.charAt(0).toUpperCase()}</div>
+          <span class="sb-mem-name">${name}</span>
+          <span class="sb-mem-arrow" id="${id}-arrow">▶</span>
+        </div>
+        <div class="sb-mem-recs" id="${id}-recs">${recItems}</div>
+      </div>`;
+  }).join('');
+}
+
+function toggleSbMember(id) {
+  const recs = $(id + '-recs');
+  const arrow = $(id + '-arrow');
+  if (!recs) return;
+  const open = recs.classList.toggle('open');
+  if (arrow) arrow.classList.toggle('open', open);
+}
+
+function loadMemberRecord(user, recName) {
+  const s = loadStore();
+  const rec = s.users[user]?.monthlyRecords?.[recName];
+  if (!rec) return;
+  if (!confirm(`${user}さんの「${recName}」を読み込みます。\n現在の入力は上書きされます。よろしいですか？`)) return;
+  applyUserData(rec.data);
+  restoreInputs();
+  update();
+}
+
+function toggleSidebar() {
+  const sb = $('sidebar');
+  const btn = $('sbMobBtn');
+  const open = sb.classList.toggle('mob-open');
+  if (btn) btn.textContent = open ? '📁 記録を閉じる ▴' : '📁 記録・メンバーを見る ▾';
 }
 
 // ── TAB SWITCH ──
