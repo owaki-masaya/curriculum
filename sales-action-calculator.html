@@ -493,7 +493,7 @@ function calcAll() {
   const newActions   = newMeetings;
   const followActs   = totalMis;
   const adjTotal     = nv(ST.actionAdj.pr) + nv(ST.actionAdj.net) + nv(ST.actionAdj.sw);
-  const totalActions = newActions + adjTotal;
+  const totalActions  = monthlyMeetings + adjTotal;  // 進行中＋未商談＋補正
   const weeklyActions = cl(totalActions / wk);
 
   // 未商談計画 × 受注率 = 期待着地追加分（タワー・プログレスバー用）
@@ -797,35 +797,37 @@ function renderResultTab() {
   }
 
   const { weeklyActions, totalActions, monthlyMeetings, newActions, adjTotal, wk, pr, net, sw } = c;
+  const dailyActions = Math.ceil(weeklyActions / 5);  // 月-金
 
   // Alert
   const alCls = weeklyActions === 0 ? 'al-ok' : weeklyActions <= 5 ? 'al-wa' : 'al-ng';
   const alMsg = weeklyActions === 0
     ? '✅ 現在のヨミ着地で全目標達成の見込みです。'
-    : `${weeklyActions <= 5 ? '⚠️' : '🔴'} 週合計 ${weeklyActions} 件の行動が必要です。`;
+    : `${weeklyActions <= 5 ? '⚠️' : '🔴'} 週合計 ${weeklyActions} 件（1日あたり ${dailyActions} 件 / 月-金）の行動が必要です。`;
 
   // Hero
   const misTotalStr = c.newMeetings > 0 ? ` ＋ 未商談${c.newMeetings}件` : '';
   const adjStr = adjTotal > 0 ? ` ＋ 補正${adjTotal}件` : '';
   const heroHtml = `
     <div class="hero-card">
-      <div class="hero-label">週あたり合計行動数</div>
+      <div class="hero-label">週あたり合計行動数（月-金）</div>
       <div class="hero-val">${weeklyActions}<span class="hero-unit">件 / 週</span></div>
+      <div style="font-family:var(--fm);font-size:15px;font-weight:700;color:rgba(26,26,26,.6);margin-top:4px;position:relative">約 ${dailyActions} 件 / 日</div>
       <div class="hero-sub">月間 ${totalActions}件 ／ 進行中${c.inNeg}件${misTotalStr}${adjStr}</div>
     </div>`;
 
-  // RC3: 月間行動 / 月間商談 / 残り週
+  // RC3: 月間行動 / 1日あたり / 残り週
   const rc3Html = `
     <div class="rc3">
       <div class="rc">
         <div class="rl">月間 総行動数</div>
         <div class="rv">${totalActions}<span class="ru">件</span></div>
-        <div class="rs">未商談${newActions}件${adjTotal>0?' ＋ 補正'+adjTotal+'件':''}</div>
+        <div class="rs">進行中${c.inNeg}件 ＋ 未商談${c.newMeetings}件${adjTotal>0?' ＋ 補正'+adjTotal+'件':''}</div>
       </div>
       <div class="rc">
-        <div class="rl">月間 商談数</div>
-        <div class="rv">${monthlyMeetings}<span class="ru">件</span></div>
-        <div class="rs">進行中${c.inNeg} ＋ 未商談${c.newMeetings}件</div>
+        <div class="rl">1日あたり（月-金）</div>
+        <div class="rv">${dailyActions}<span class="ru">件</span></div>
+        <div class="rs">週${weeklyActions}件 ÷ 5日</div>
       </div>
       <div class="rc">
         <div class="rl">残り週数</div>
@@ -870,22 +872,26 @@ function renderResultTab() {
   const towerHtml = renderTower(c);
 
   // 週次シミュレーション（2週 vs 3週）
+  const wk2 = cl(totalActions/2), wk3 = cl(totalActions/3);
+  const dy2 = Math.ceil(wk2/5),   dy3 = Math.ceil(wk3/5);
   const weekCmpHtml = totalActions > 0 ? `
     <div class="card" style="margin-bottom:14px">
-      <div class="card-ttl">必要行動数 週次シミュレーション</div>
+      <div class="card-ttl">必要行動数 週次シミュレーション（月-金）</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
         <div style="background:#F9F9F9;border-radius:14px;padding:18px;text-align:center;border:2px solid var(--bdr)">
           <div style="font-size:11px;font-weight:900;color:var(--mu);margin-bottom:8px;letter-spacing:.06em">2週間で達成</div>
-          <div style="font-family:var(--fm);font-size:40px;font-weight:700;color:#1a1a1a;line-height:1">${cl(totalActions/2)}</div>
+          <div style="font-family:var(--fm);font-size:38px;font-weight:700;color:#1a1a1a;line-height:1">${wk2}</div>
           <div style="font-size:12px;color:var(--mu);font-weight:700;margin-top:6px">件 / 週</div>
+          <div style="font-size:11px;color:var(--mu);font-weight:800;margin-top:4px">約 ${dy2} 件 / 日</div>
         </div>
         <div style="background:var(--y);border-radius:14px;padding:18px;text-align:center;border:2px solid var(--yd);box-shadow:var(--sh2)">
           <div style="font-size:11px;font-weight:900;color:rgba(26,26,26,.55);margin-bottom:8px;letter-spacing:.06em">3週間で達成</div>
-          <div style="font-family:var(--fm);font-size:40px;font-weight:700;color:#1a1a1a;line-height:1">${cl(totalActions/3)}</div>
+          <div style="font-family:var(--fm);font-size:38px;font-weight:700;color:#1a1a1a;line-height:1">${wk3}</div>
           <div style="font-size:12px;color:rgba(26,26,26,.55);font-weight:700;margin-top:6px">件 / 週</div>
+          <div style="font-size:11px;color:rgba(26,26,26,.5);font-weight:800;margin-top:4px">約 ${dy3} 件 / 日</div>
         </div>
       </div>
-      <div style="text-align:center;font-size:11px;color:var(--mu);font-weight:700">月間総行動数: ${totalActions}件</div>
+      <div style="text-align:center;font-size:11px;color:var(--mu);font-weight:700">月間総行動数: ${totalActions}件（進行中${c.inNeg}件 ＋ 未商談${c.newMeetings}件）</div>
     </div>` : '';
 
   // Week plan
@@ -1076,27 +1082,31 @@ function renderMisInput(c) {
 // ── WEEK PLAN ──
 function renderWeekPlan(c) {
   if (c.weeklyActions === 0) return '';
-  const { wk, newActions, monthlyMeetings } = c;
-  const newPerWk  = cl(newActions / wk);
-  const meetPerWk = cl(monthlyMeetings / wk);
-  const cols = `44px 1fr 1fr 64px`;
+  const { wk, totalActions } = c;
+  const perWk = cl(totalActions / wk);
+  const cols = `44px 1fr 1fr 1fr 64px`;
   let rows = '', cumul = 0;
+  const days = ['月','火','水','木','金'];
   for (let i = 0; i < wk; i++) {
-    const wN = i < wk-1 ? newPerWk  : Math.max(0, newActions       - newPerWk  * (wk-1));
-    const wM = i < wk-1 ? meetPerWk : Math.max(0, monthlyMeetings  - meetPerWk * (wk-1));
-    cumul += wN;
+    const wT   = i < wk-1 ? perWk : Math.max(0, totalActions - perWk * (wk-1));
+    const perDay = Math.ceil(wT / 5);
+    cumul += wT;
+    const dayHtml = days.map(d =>
+      `<span style="display:inline-block;text-align:center;font-family:var(--fm);font-size:11px;font-weight:700;color:var(--mu)">${d}<br><span style="font-size:13px;font-weight:800;color:var(--tx)">${perDay}</span></span>`
+    ).join('');
     rows += `<div class="wk-row" style="grid-template-columns:${cols}">
       <span class="wk-n">W${i+1}</span>
-      <span class="wk-v">${wN}件</span>
-      <span class="wk-v" style="color:var(--sw);font-weight:800">${wM}件</span>
+      <span class="wk-v" style="font-size:15px;font-weight:800;color:var(--tx)">${wT}件</span>
+      <span class="wk-v" style="font-size:11px;color:var(--mu)">約 ${perDay} 件/日</span>
+      <span style="padding:8px 6px;display:flex;gap:4px;align-items:center;justify-content:center">${dayHtml}</span>
       <span class="wk-total">${cumul}件</span>
     </div>`;
   }
   return `
     <div class="wk-plan" style="margin-top:14px">
       <div class="wk-head" style="grid-template-columns:${cols}">
-        <span>週</span><span>行動数</span>
-        <span style="color:var(--sw)">商談数</span><span>累計</span>
+        <span>週</span><span>行動数</span><span>1日あたり</span>
+        <span>月〜金 内訳</span><span>累計</span>
       </div>
       ${rows}
     </div>`;
