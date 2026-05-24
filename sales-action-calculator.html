@@ -363,18 +363,6 @@ body{background:#fff;}
   <!-- Yomi card (re-rendered) -->
   <div id="yomiCard"></div>
 
-  <!-- 進行中から何件商談いくか（手打ち） -->
-  <div class="neg-rate-row">
-    <label>進行中から何件商談いくか（手打ち）</label>
-    <div class="f">
-      <label>neg</label>
-      <input type="number" placeholder="空白=自動" id="inNegInput" min="0"
-        onchange="ST.inNegManual=this.value===''?null:+this.value;update()"
-        onkeydown="if(event.key==='Enter'){ST.inNegManual=this.value===''?null:+this.value;update()}">
-    </div>
-    <span style="font-size:14px;font-weight:800;color:var(--mu)">件</span>
-  </div>
-
   <!-- 計算ブロック（合計・全種別） -->
   <div id="calcBlock"></div>
 
@@ -398,7 +386,7 @@ const ST = {
     net: { zumi:'', a:'', b:'', c:'', d:'', mis:'' },
     sw:  { zumi:'', a:'', b:'', c:'', d:'', mis:'' },
   },
-  inNegManual: null,
+  inNegManual: { pr: null, net: null, sw: null },
   weeksLeft: 3,
   misTarget:  { pr: '', net: '', sw: '' },
   actionAdj:  { pr: '', net: '', sw: '' },
@@ -448,6 +436,11 @@ function setActionAdj(type, val) {
   ST.actionAdj[type] = val;
   renderResultTab();
 }
+function setInNegType(type, val) {
+  ST.inNegManual[type] = val === '' ? null : +val;
+  renderResultTab();
+  if (ST.tab === 'yomi') { renderYomiCard(); renderCalcBlock(); }
+}
 
 // ── CALCULATIONS ──
 function calcLanding(yomiType) {
@@ -481,9 +474,12 @@ function calcAll() {
   const landRev  = pr.landing * prArpu + sw.landing * swArpu;
   const revPct   = goalRev > 0 ? Math.min(100, (landRev / goalRev) * 100) : 0;
 
-  // 進行中から商談行く件数（手打ち優先、なければ各タイプの済+A+B+C+D 合計）
+  // 進行中から商談行く件数（タイプ別手打ち優先、なければヨミ自動計算）
+  const prInNeg  = ST.inNegManual.pr  !== null ? ST.inNegManual.pr  : pr.inNeg;
+  const netInNeg = ST.inNegManual.net !== null ? ST.inNegManual.net : net.inNeg;
+  const swInNeg  = ST.inNegManual.sw  !== null ? ST.inNegManual.sw  : sw.inNeg;
+  const inNeg    = prInNeg + netInNeg + swInNeg;
   const inNegCalc = pr.inNeg + net.inNeg + sw.inNeg;
-  const inNeg     = ST.inNegManual !== null ? ST.inNegManual : inNegCalc;
   const totalMis  = pr.mis + net.mis + sw.mis;
 
   // 必要未商談 - 手打ちがあればそちらを使用（行動数の計算に反映）
@@ -510,7 +506,7 @@ function calcAll() {
 
   return { pr, net, sw, wk, prArpu, swArpu, prArpuBudget, swArpuBudget,
            goalRev, landRev, revPct,
-           inNeg, inNegCalc, totalMis, newMeetings, monthlyMeetings,
+           prInNeg, netInNeg, swInNeg, inNeg, inNegCalc, totalMis, newMeetings, monthlyMeetings,
            newActions, followActs, adjTotal, totalActions, weeklyActions,
            prExtLanding, netExtLanding, swExtLanding, prExtPct, netExtPct, swExtPct };
 }
@@ -580,8 +576,9 @@ function renderCalcBlock() {
 
   if (!typeDefs.length) { $('calcBlock').innerHTML = ''; return; }
 
-  const inNegHint = ST.inNegManual !== null
-    ? `<span style="font-size:10px;color:var(--wa);margin-left:6px">手打ち（ヨミ自動:${inNegCalc}件）</span>`
+  const hasManual = Object.values(ST.inNegManual).some(v => v !== null);
+  const inNegHint = hasManual
+    ? `<span style="font-size:10px;color:var(--wa);margin-left:6px">手打ちあり（ヨミ自動:${inNegCalc}件）</span>`
     : `<span style="font-size:10px;color:var(--mu);margin-left:6px">ヨミ自動計算</span>`;
 
   const typeBlocks = typeDefs.map(({ label, t, ratePct, pillCls }) => {
@@ -640,12 +637,16 @@ function renderShortageCard(c) {
   ].filter(x => x.t.goalCnt > 0);
   if (!types.length) return '';
 
+  const inNegMap = { pr: c.prInNeg, net: c.netInNeg, sw: c.swInNeg };
+
   const rows = types.map(({ key, label, t, pillCls }) => {
     const shortfall  = Math.max(0, t.goalCnt - t.landing);
     const needed     = t.newOpps;
     const achieved   = t.landing >= t.goalCnt;
     const misCnt     = nv(ST.misTarget[key]);
     const adjCnt     = nv(ST.actionAdj[key]);
+    const inNegVal   = ST.inNegManual[key];
+    const inNegAuto  = t.inNeg;
     const extLand    = t.landing + misCnt * t.rate;
     const extPct     = t.goalCnt > 0 ? extLand / t.goalCnt * 100 : 0;
     const isOver     = extPct > 100;
@@ -656,7 +657,10 @@ function renderShortageCard(c) {
     const misBarW    = isOver ? 0 : Math.min(100 - basePct, t.goalCnt > 0 ? misCnt * t.rate / t.goalCnt * 100 : 0);
     const pctTxt     = isOver ? `${extPct.toFixed(0)}%（+${excessCnt}件超過）` : `${extPct.toFixed(0)}%`;
     const arpu       = key === 'pr' ? c.prArpu : key === 'sw' ? c.swArpu : 0;
-    const misRev     = arpu > 0 && misCnt > 0 ? misCnt * arpu : 0;
+    const landedFromMis = misCnt * t.rate;
+    const misRev     = arpu > 0 && landedFromMis > 0 ? landedFromMis * arpu : 0;
+    const typeInNeg  = inNegMap[key];
+    const typeTotal  = typeInNeg + misCnt + adjCnt;
 
     return `
       <div style="background:#FAFAFA;border:2px solid var(--bdr2);border-radius:14px;padding:14px">
@@ -678,7 +682,13 @@ function renderShortageCard(c) {
           ` : ''}
         </div>
         <!-- 手打ち入力 -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+          <div class="f">
+            <label>進行中 商談数</label>
+            <input type="number" placeholder="${inNegAuto}（自動）" value="${inNegVal !== null ? inNegVal : ''}"
+              onchange="setInNegType('${key}',this.value)"
+              onkeydown="if(event.key==='Enter')setInNegType('${key}',this.value)" min="0">
+          </div>
           <div class="f">
             <label>組む商談数（未商談）</label>
             <input type="number" placeholder="${needed}" value="${ST.misTarget[key]}"
@@ -692,12 +702,16 @@ function renderShortageCard(c) {
               onkeydown="if(event.key==='Enter')setActionAdj('${key}',this.value)">
           </div>
         </div>
+        <div style="background:#F5F5F5;border:1.5px solid var(--bdr2);border-radius:8px;padding:6px 12px;margin-bottom:8px;font-size:11px;font-weight:800;color:var(--mu);display:flex;justify-content:space-between">
+          <span>${label} 月間行動数</span>
+          <span style="color:var(--tx);font-family:var(--fm)">${typeInNeg}件（進行中）＋ ${misCnt}件（未商談）${adjCnt>0?` ＋ ${adjCnt}件（補正）`:''} ＝ ${typeTotal}件</span>
+        </div>
         <!-- 売上見込み（PR/切替のみ） -->
         ${misRev > 0 ? `
-        <div style="background:#F0F4FF;border:1.5px solid #BFCFFF;border-radius:10px;padding:8px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:10px;font-weight:900;color:var(--mu)">売上見込み（${misCnt}件 × ARPU ${yen(arpu)}）</span>
-          <span style="font-family:var(--fm);font-size:14px;font-weight:700;color:#1a1a1a">${yen(misRev)}</span>
-        </div>` : (arpu > 0 && misCnt === 0 ? `<div style="background:#F5F5F5;border:1.5px solid var(--bdr2);border-radius:10px;padding:7px 12px;margin-bottom:8px;font-size:10px;color:var(--mu);font-weight:800">件数を入力すると売上見込みを表示（ARPU: ${yen(arpu)}）</div>` : '')}
+        <div style="background:#F0F4FF;border:1.5px solid #BFCFFF;border-radius:10px;padding:8px 12px;margin-bottom:8px;display:flex;flex-direction:column;gap:3px">
+          <span style="font-size:10px;font-weight:900;color:var(--mu)">売上見込み（未商談 ${misCnt}件 × 受注率${(t.rate*100).toFixed(0)}% ＝ ${f1(landedFromMis)}件 × ARPU ${yen(arpu)}）</span>
+          <span style="font-family:var(--fm);font-size:15px;font-weight:700;color:#1a1a1a;text-align:right">${yen(misRev)}</span>
+        </div>` : (arpu > 0 && misCnt === 0 ? `<div style="background:#F5F5F5;border:1.5px solid var(--bdr2);border-radius:10px;padding:7px 12px;margin-bottom:8px;font-size:10px;color:var(--mu);font-weight:800">組む商談数を入力すると売上見込みを表示（ARPU: ${yen(arpu)}）</div>` : '')}
         <!-- 着地見込み -->
         <div style="background:${isOver?'#F0FDF4':'var(--misll)'};border:2px solid ${isOver?'#86EFAC':'var(--misd)'};border-radius:10px;padding:10px 12px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
@@ -729,27 +743,35 @@ function renderShortageCard(c) {
   const totalAdj   = types.reduce((s, { key }) => s + nv(ST.actionAdj[key]), 0);
   const grandTotal = c.inNeg + totalMis + totalAdj;
 
+  const inNegRows = types.map(({ key, label, pillCls }) =>
+    `<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:800;color:#7a4500">
+       <span style="display:flex;align-items:center;gap:4px"><span class="pill ${pillCls}" style="font-size:9px;padding:2px 7px">${label}</span>進行中</span>
+       <span style="font-family:var(--fm)">${inNegMap[key]}件</span>
+     </div>`).join('');
+
+  const misRows = types.map(({ key, label, pillCls }) => {
+    const mc = nv(ST.misTarget[key]);
+    return mc > 0 ? `<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:800;color:#7a4500">
+       <span style="display:flex;align-items:center;gap:4px"><span class="pill ${pillCls}" style="font-size:9px;padding:2px 7px">${label}</span>未商談</span>
+       <span style="font-family:var(--fm)">${mc}件</span>
+     </div>` : '';
+  }).join('');
+
   return `
     <div class="card" style="margin-bottom:14px">
       <div class="card-ttl">不足商談 自動算出 ／ 行動計画 入力</div>
       <div style="display:flex;flex-direction:column;gap:10px">${rows}</div>
       <div style="margin-top:12px;padding:14px 16px;background:#FFF3E0;border:2px solid #FFCC80;border-radius:14px">
-        <div style="font-size:11px;font-weight:900;color:#E65100;margin-bottom:10px;letter-spacing:.06em;text-transform:uppercase">月間 商談・行動 合計</div>
+        <div style="font-size:11px;font-weight:900;color:#E65100;margin-bottom:10px;letter-spacing:.06em;text-transform:uppercase">月間 行動数 合計</div>
         <div style="display:flex;flex-direction:column;gap:6px">
-          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:#7a4500">
-            <span>進行中 商談数</span>
-            <span style="font-family:var(--fm)">${c.inNeg}件</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:#7a4500">
-            <span>未商談（組む件数 合計）</span>
-            <span style="font-family:var(--fm)">${totalMis}件</span>
-          </div>
+          ${inNegRows}
+          ${misRows}
           ${totalAdj > 0 ? `<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:#7a4500">
-            <span>行動数 補正 合計</span>
+            <span>行動数 補正</span>
             <span style="font-family:var(--fm)">+${totalAdj}件</span>
           </div>` : ''}
           <div style="border-top:2px dashed #FFCC80;margin:2px 0;padding-top:8px;display:flex;justify-content:space-between;align-items:baseline">
-            <span style="font-size:13px;font-weight:900;color:#E65100">合計 必要商談・行動数</span>
+            <span style="font-size:13px;font-weight:900;color:#E65100">1か月間の行動数</span>
             <span style="font-family:var(--fm);font-size:26px;font-weight:700;color:#E65100">${grandTotal}<span style="font-size:13px;margin-left:2px">件</span></span>
           </div>
         </div>
@@ -1097,7 +1119,10 @@ function getUserData() {
 function applyUserData(data) {
   ST.goal        = Object.assign({...EMPTY_GOAL}, data.goal || {});
   ST.yomi        = data.yomi ? JSON.parse(JSON.stringify(data.yomi)) : EMPTY_YOMI();
-  ST.inNegManual = (data.inNegManual !== undefined) ? data.inNegManual : null;
+  const savedInNeg = data.inNegManual;
+  ST.inNegManual = (savedInNeg && typeof savedInNeg === 'object')
+    ? Object.assign({pr:null,net:null,sw:null}, savedInNeg)
+    : {pr:null,net:null,sw:null};
   ST.weeksLeft   = data.weeksLeft || 3;
   ST.misTarget   = Object.assign({pr:'',net:'',sw:''}, data.misTarget || {});
   ST.actionAdj   = Object.assign({pr:'',net:'',sw:''}, data.actionAdj || {});
@@ -1219,8 +1244,7 @@ function restoreInputs() {
     sl.style.setProperty('--fill', ((ST.weeksLeft-1)/3*100).toFixed(1)+'%');
     $('slVal').textContent = ST.weeksLeft;
   }
-  const ine = $('inNegInput');
-  if (ine) ine.value = (ST.inNegManual !== null) ? ST.inNegManual : '';
+  // inNeg inputs are in the dynamically rendered shortage card; no static restore needed
 }
 
 // ── TAB SWITCH ──
