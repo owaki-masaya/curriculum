@@ -428,7 +428,6 @@ const YOMI_DEF = [
   { key:'b',    label:'Bヨミ',  pctLabel:'70%',   rate:0.7, cls:'yn-b'   },
   { key:'c',    label:'Cヨミ',  pctLabel:'30%',   rate:0.3, cls:'yn-c'   },
   { key:'d',    label:'Dヨミ',  pctLabel:'10%',   rate:0.1, cls:'yn-d'   },
-  { key:'mis',  label:'未商談', pctLabel:'要商談', rate:0,   cls:'yn-mis' },
 ];
 
 // ── HELPERS ──
@@ -457,14 +456,17 @@ function setYomi(type, key, val) {
   renderCalcBlock();
   if (ST.tab === 'result') renderResultTab();
   updArpu();
+  saveCurrentUser();
 }
 function setMisTarget(type, val) {
   ST.misTarget[type] = val;
   renderResultTab();
+  saveCurrentUser();
 }
 function setActionAdj(type, val) {
   ST.actionAdj[type] = val;
   renderResultTab();
+  saveCurrentUser();
 }
 function setInNegType(type, val) {
   ST.inNegManual[type] = val === '' ? null : +val;
