@@ -1251,7 +1251,10 @@ function saveCurrentUser() {
   if (!currentUser) return;
   const s = loadStore();
   if (!s.users) s.users = {};
-  s.users[currentUser] = getUserData();
+  const existing = s.users[currentUser] || {};
+  s.users[currentUser] = Object.assign({}, getUserData(), {
+    monthlyRecords: existing.monthlyRecords || {}
+  });
   s.currentUser = currentUser;
   saveStore(s);
 }
