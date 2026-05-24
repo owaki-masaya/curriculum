@@ -365,6 +365,7 @@ body{background:#fff;}
   <button class="tab on" onclick="switchTab('goal')">① 目標設定</button>
   <button class="tab"    onclick="switchTab('yomi')">② ヨミ入力</button>
   <button class="tab"    onclick="switchTab('result')">③ 行動計画</button>
+  <button class="tab"    onclick="switchTab('weekly')">④ 週次チェック</button>
 </div>
 
 <!-- ══ TAB 1: 目標設定 ══ -->
@@ -457,6 +458,9 @@ body{background:#fff;}
 <!-- ══ TAB 3: 行動計画 ══ -->
 <div id="tab-result" style="display:none"></div>
 
+<!-- ══ TAB 4: 週次チェック ══ -->
+<div id="tab-weekly" style="display:none"></div>
+
 </div><!-- /main-cnt -->
 </div><!-- /layout -->
 </div><!-- /app -->
@@ -474,8 +478,11 @@ const ST = {
   },
   inNegManual: { pr: null, net: null, sw: null },
   weeksLeft: 3,
-  misTarget:  { pr: '', net: '', sw: '' },
-  actionAdj:  { pr: '', net: '', sw: '' },
+  misTarget:   { pr: '', net: '', sw: '' },
+  actionAdj:   { pr: '', net: '', sw: '' },
+  weeklyYomi:  { zumi: '', a: '', b: '', c: '', d: '' },
+  weeklyInNeg: null,
+  daysLeft:    5,
 };
 
 const YOMI_DEF = [
@@ -1219,6 +1226,9 @@ function getUserData() {
     weeksLeft:   ST.weeksLeft,
     misTarget:   JSON.parse(JSON.stringify(ST.misTarget)),
     actionAdj:   JSON.parse(JSON.stringify(ST.actionAdj)),
+    weeklyYomi:  JSON.parse(JSON.stringify(ST.weeklyYomi)),
+    weeklyInNeg: ST.weeklyInNeg,
+    daysLeft:    ST.daysLeft,
   };
 }
 
@@ -1232,6 +1242,9 @@ function applyUserData(data) {
   ST.weeksLeft   = data.weeksLeft || 3;
   ST.misTarget   = Object.assign({pr:'',net:'',sw:''}, data.misTarget || {});
   ST.actionAdj   = Object.assign({pr:'',net:'',sw:''}, data.actionAdj || {});
+  ST.weeklyYomi  = Object.assign({zumi:'',a:'',b:'',c:'',d:''}, data.weeklyYomi || {});
+  ST.weeklyInNeg = data.weeklyInNeg !== undefined ? data.weeklyInNeg : null;
+  ST.daysLeft    = data.daysLeft || 5;
 }
 
 function saveCurrentUser() {
@@ -1507,17 +1520,168 @@ function toggleSidebar() {
   if (btn) btn.textContent = open ? '📁 記録を閉じる ▴' : '📁 記録・メンバーを見る ▾';
 }
 
+// ── WEEKLY TAB ──
+function calcWeekly() {
+  const wk = Math.max(1, ST.weeksLeft);
+  const prCnt = nv(ST.goal.pr_cnt), netCnt = nv(ST.goal.net_cnt), swCnt = nv(ST.goal.sw_cnt);
+  const totalCnt = prCnt + netCnt + swCnt;
+  const weekGoalPr  = cl(prCnt  / wk);
+  const weekGoalNet = cl(netCnt / wk);
+  const weekGoalSw  = cl(swCnt  / wk);
+  const weekGoal    = cl(totalCnt / wk);
+  const wy = ST.weeklyYomi;
+  const landing = nv(wy.zumi)*1.0 + nv(wy.a)*1.0 + nv(wy.b)*0.7 + nv(wy.c)*0.3 + nv(wy.d)*0.1;
+  const diff = Math.max(0, weekGoal - landing);
+  const avgRate = totalCnt > 0
+    ? (prCnt * nv(ST.goal.pr_rate) + netCnt * nv(ST.goal.net_rate) + swCnt * nv(ST.goal.sw_rate)) / totalCnt / 100
+    : 0;
+  const newMeetings = avgRate > 0 ? cl(diff / avgRate) : (diff > 0 ? 999 : 0);
+  const inNeg = ST.weeklyInNeg !== null ? ST.weeklyInNeg : 0;
+  const totalMeetings = inNeg + newMeetings;
+  const daysLeft = Math.max(1, ST.daysLeft);
+  const perDay = cl(totalMeetings / daysLeft);
+  const pct = weekGoal > 0 ? (landing / weekGoal) * 100 : 0;
+  return { weekGoal, weekGoalPr, weekGoalNet, weekGoalSw, totalCnt, landing: f1(landing), diff: f1(diff), avgRate, newMeetings, inNeg, totalMeetings, daysLeft, perDay, pct: Math.round(pct) };
+}
+
+function setWkYomi(key, val) {
+  ST.weeklyYomi[key] = val;
+  renderWeeklyTab();
+  saveCurrentUser();
+}
+
+function setWkInNeg(val) {
+  ST.weeklyInNeg = val === '' ? null : +val;
+  renderWeeklyTab();
+  saveCurrentUser();
+}
+
+function setDaysLeft(val) {
+  ST.daysLeft = +val;
+  renderWeeklyTab();
+  saveCurrentUser();
+}
+
+function renderWeeklyTab() {
+  const el = $('tab-weekly');
+  if (!el) return;
+  const c = calcWeekly();
+  const wk = ST.weeksLeft;
+  const hasGoal = c.totalCnt > 0;
+  const noGoalMsg = !hasGoal
+    ? `<div style="text-align:center;padding:32px;color:var(--mu);font-size:13px;font-weight:800">① 目標設定タブで月次目標を入力してください</div>`
+    : '';
+
+  const pctColor = c.pct >= 100 ? 'var(--ok)' : c.pct >= 70 ? 'var(--wa)' : 'var(--ng)';
+
+  // Milestone card
+  const milestoneCard = hasGoal ? `
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-ttl">今週のマイルストーン（月次目標 ÷ 残り${wk}週）</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center">
+        ${[['PR',c.weekGoalPr,'pill-pr'],['NET',c.weekGoalNet,'pill-net'],['切替',c.weekGoalSw,'pill-sw'],['合計',c.weekGoal,'']].map(([label,val,cls]) => `
+          <div style="background:#F9F9F9;border-radius:12px;padding:12px 6px">
+            ${cls ? `<div class="pill ${cls}" style="margin-bottom:6px;display:inline-block">${label}</div>` : `<div style="font-size:11px;font-weight:900;color:var(--mu);margin-bottom:6px">${label}</div>`}
+            <div style="font-family:var(--fm);font-size:22px;font-weight:700;color:var(--tx)">${val}<span style="font-size:12px">件</span></div>
+          </div>`).join('')}
+      </div>
+    </div>` : '';
+
+  // Yomi input card
+  const yomiDef = [
+    { key:'zumi', label:'済',    rate:1.0 },
+    { key:'a',    label:'Aヨミ', rate:1.0 },
+    { key:'b',    label:'Bヨミ', rate:0.7 },
+    { key:'c',    label:'Cヨミ', rate:0.3 },
+    { key:'d',    label:'Dヨミ', rate:0.1 },
+  ];
+  const yomiInputs = yomiDef.map(d => `
+    <div class="yb" style="background:#FAFAFA">
+      <div class="yb-name">${d.label}</div>
+      <div class="yb-pct" style="font-size:9px">${Math.round(d.rate*100)}%</div>
+      <input type="number" min="0" value="${ST.weeklyYomi[d.key]}"
+        onchange="setWkYomi('${d.key}',this.value)"
+        onkeydown="if(event.key==='Enter')setWkYomi('${d.key}',this.value)">
+    </div>`).join('');
+
+  const pctBar = `
+    <div style="background:#F0F0F0;border-radius:8px;height:10px;margin:10px 0 4px;overflow:hidden">
+      <div style="background:${pctColor};height:100%;width:${Math.min(100,c.pct)}%;border-radius:8px;transition:width .3s"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:800;color:var(--mu)">
+      <span>ヨミ着地 ${c.landing}件</span>
+      <span style="color:${pctColor}">${c.pct}%</span>
+      <span>目標 ${c.weekGoal}件</span>
+    </div>`;
+
+  const statusMsg = c.pct >= 100
+    ? `<div style="margin-top:10px;padding:10px 14px;background:#DCFCE7;border-radius:10px;font-size:13px;font-weight:900;color:var(--ok)">✅ 今週の目標達成見込み！</div>`
+    : c.diff > 0 ? `<div style="margin-top:10px;padding:10px 14px;background:#FEF3C7;border-radius:10px;font-size:13px;font-weight:900;color:var(--wa)">あと ${c.diff}件 不足</div>` : '';
+
+  const yomiCard = `
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-ttl">今週のヨミ入力</div>
+      <div class="yomi-row" style="grid-template-columns:repeat(5,1fr)">${yomiInputs}</div>
+      ${pctBar}
+      ${statusMsg}
+    </div>`;
+
+  // Action plan card
+  const daysOpts = [1,2,3,4,5].map(d =>
+    `<option value="${d}" ${ST.daysLeft===d?'selected':''}>${d}日</option>`).join('');
+
+  const actionCard = `
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-ttl">今週の行動計画</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div class="f">
+          <label>進行中から何件商談いくか（今週）</label>
+          <input type="number" min="0" placeholder="件数を入力"
+            value="${ST.weeklyInNeg !== null ? ST.weeklyInNeg : ''}"
+            oninput="setWkInNeg(this.value)">
+        </div>
+        <div class="f">
+          <label>今週の残り稼働日</label>
+          <select onchange="setDaysLeft(this.value)"
+            style="width:100%;border:2px solid var(--bdr2);border-radius:10px;padding:10px 12px;font-family:var(--fm);font-size:15px;font-weight:700;color:var(--tx);background:#FAFAFA;outline:none">
+            ${daysOpts}
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:center">
+        <div style="background:var(--yll);border-radius:12px;padding:14px 8px">
+          <div style="font-size:10px;font-weight:900;color:var(--mu);margin-bottom:4px">必要新規商談</div>
+          <div style="font-family:var(--fm);font-size:26px;font-weight:700">${c.newMeetings}<span style="font-size:12px">件</span></div>
+          ${c.avgRate > 0 ? `<div style="font-size:10px;color:var(--mu);font-weight:700">受注率${Math.round(c.avgRate*100)}%ベース</div>` : ''}
+        </div>
+        <div style="background:#F0F4FF;border-radius:12px;padding:14px 8px">
+          <div style="font-size:10px;font-weight:900;color:var(--mu);margin-bottom:4px">今週合計商談数</div>
+          <div style="font-family:var(--fm);font-size:26px;font-weight:700;color:var(--pr)">${c.totalMeetings}<span style="font-size:12px">件</span></div>
+          <div style="font-size:10px;color:var(--mu);font-weight:700">進行中${c.inNeg}＋新規${c.newMeetings}</div>
+        </div>
+        <div style="background:var(--y);border-radius:12px;padding:14px 8px">
+          <div style="font-size:10px;font-weight:900;color:rgba(26,26,26,.6);margin-bottom:4px">1日あたり</div>
+          <div style="font-family:var(--fm);font-size:26px;font-weight:700">${c.perDay}<span style="font-size:12px">件</span></div>
+          <div style="font-size:10px;color:rgba(26,26,26,.6);font-weight:700">残${c.daysLeft}日で割った数</div>
+        </div>
+      </div>
+    </div>`;
+
+  el.innerHTML = noGoalMsg || (milestoneCard + yomiCard + actionCard);
+}
+
 // ── TAB SWITCH ──
 function switchTab(t) {
   ST.tab = t;
-  ['goal','yomi','result'].forEach(id => {
+  ['goal','yomi','result','weekly'].forEach(id => {
     $('tab-'+id).style.display = id === t ? '' : 'none';
   });
   document.querySelectorAll('.tab').forEach((btn, i) => {
-    btn.classList.toggle('on', ['goal','yomi','result'][i] === t);
+    btn.classList.toggle('on', ['goal','yomi','result','weekly'][i] === t);
   });
   if (t === 'yomi')   { renderYomiCard(); renderCalcBlock(); }
   if (t === 'result') renderResultTab();
+  if (t === 'weekly') renderWeeklyTab();
 }
 
 // ── MASTER UPDATE ──
@@ -1525,6 +1689,7 @@ function update() {
   updArpu();
   if (ST.tab === 'yomi')   { renderYomiCard(); renderCalcBlock(); }
   if (ST.tab === 'result') renderResultTab();
+  if (ST.tab === 'weekly') renderWeeklyTab();
   saveCurrentUser();
 }
 
