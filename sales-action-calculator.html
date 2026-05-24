@@ -286,9 +286,13 @@ body{background:#fff;}
   .sidebar{width:100%;position:static;display:none;}
   .sidebar.mob-open{display:block;}
   .sb-mob-btn{display:block;}
-  /* ヘッダー: 保存ボタン非表示 + padding で右余白確保 */
+  /* ヘッダー: flex列でユーザーバッジを先頭右寄せに配置 */
   .save-hd-btn{display:none;}
-  .hd{padding:20px 110px 16px 20px;}
+  .hd{padding:12px 16px 16px;display:flex;flex-direction:column;}
+  .ubw{position:static !important;align-self:flex-end;order:-1;margin-bottom:6px;}
+  .hd h1{font-size:20px;order:0;}
+  .hd p{order:1;}
+  .hd .month-tag{order:2;}
   /* タブ: 横スクロール強制 */
   .tabs{overflow-x:auto !important;-webkit-overflow-scrolling:touch;flex-wrap:nowrap !important;width:100% !important;max-width:100%;}
   .tab{padding:8px 14px;font-size:12px;white-space:nowrap;}
