@@ -508,10 +508,10 @@ function calcAll() {
   const landRev  = pr.landing * prArpu + sw.landing * swArpu;
   const revPct   = goalRev > 0 ? Math.min(100, (landRev / goalRev) * 100) : 0;
 
-  // 進行中から商談行く件数（タイプ別手打ち優先、なければヨミ自動計算）
-  const prInNeg  = ST.inNegManual.pr  !== null ? ST.inNegManual.pr  : pr.inNeg;
-  const netInNeg = ST.inNegManual.net !== null ? ST.inNegManual.net : net.inNeg;
-  const swInNeg  = ST.inNegManual.sw  !== null ? ST.inNegManual.sw  : sw.inNeg;
+  // 進行中から商談行く件数（手打ちのみ。未入力は0）
+  const prInNeg  = ST.inNegManual.pr  !== null ? ST.inNegManual.pr  : 0;
+  const netInNeg = ST.inNegManual.net !== null ? ST.inNegManual.net : 0;
+  const swInNeg  = ST.inNegManual.sw  !== null ? ST.inNegManual.sw  : 0;
   const inNeg    = prInNeg + netInNeg + swInNeg;
   const inNegCalc = pr.inNeg + net.inNeg + sw.inNeg;
   const totalMis  = pr.mis + net.mis + sw.mis;
@@ -610,10 +610,6 @@ function renderCalcBlock() {
 
   if (!typeDefs.length) { $('calcBlock').innerHTML = ''; return; }
 
-  const hasManual = Object.values(ST.inNegManual).some(v => v !== null);
-  const inNegHint = hasManual
-    ? `<span style="font-size:10px;color:var(--wa);margin-left:6px">手打ちあり（ヨミ自動:${inNegCalc}件）</span>`
-    : `<span style="font-size:10px;color:var(--mu);margin-left:6px">ヨミ自動計算</span>`;
 
   const typeBlocks = typeDefs.map(({ key, label, t, ratePct, pillCls }) => {
     const shortageOk = t.diff <= 0;
@@ -641,7 +637,7 @@ function renderCalcBlock() {
         </div>` : ''}
         <div class="f" style="margin-top:10px">
           <label>進行中から何件商談いくか${isManual ? ' <span style="color:var(--wa)">(手打ち)</span>' : ''}</label>
-          <input type="number" placeholder="${t.inNeg}（ヨミ自動）" value="${isManual ? inNegVal : ''}"
+          <input type="number" placeholder="件数を入力" value="${isManual ? inNegVal : ''}"
             oninput="setInNegType('${key}',this.value)" min="0">
         </div>
       </div>`;
@@ -652,7 +648,7 @@ function renderCalcBlock() {
       <div class="calc-blk-hd">進行中から逆算（タイプ別）</div>
       <div class="calc-blk-body">
         <div class="cb-spotlight">
-          <span>進行中から何件商談行くか${inNegHint}</span>
+          <span>進行中から何件商談行くか</span>
           <strong>${inNeg} 件</strong>
         </div>
         ${typeBlocks}
@@ -725,7 +721,7 @@ function renderShortageCard(c) {
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
           <div class="f">
             <label>進行中 商談数</label>
-            <input type="number" placeholder="${inNegAuto}（自動）" value="${inNegVal !== null ? inNegVal : ''}"
+            <input type="number" placeholder="件数を入力" value="${inNegVal !== null ? inNegVal : ''}"
               onchange="setInNegType('${key}',this.value)"
               onkeydown="if(event.key==='Enter')setInNegType('${key}',this.value)" min="0">
           </div>
