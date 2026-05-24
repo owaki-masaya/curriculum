@@ -278,12 +278,25 @@ body{background:#fff;}
 .sb-mem-rec-name{font-size:11px;font-weight:800;color:var(--tx);}
 .sb-mem-rec-date{font-size:10px;color:var(--mu);font-weight:700;}
 .sb-mob-btn{display:none;width:100%;background:#fff;border:2px solid var(--bdr2);border-radius:12px;padding:11px 16px;font-size:13px;font-weight:900;cursor:pointer;font-family:var(--ff);color:var(--tx);text-align:left;margin-bottom:12px;}
+.sb-export-btn{width:100%;background:#F5F5F5;border:2px solid var(--bdr2);border-radius:10px;padding:8px;font-size:11px;font-weight:900;cursor:pointer;font-family:var(--ff);color:var(--tx);margin-bottom:6px;display:block;text-align:center;}
+.sb-import-lbl{display:block;width:100%;background:var(--yl);border:2px solid var(--yd);border-radius:10px;padding:8px;font-size:11px;font-weight:900;cursor:pointer;font-family:var(--ff);color:var(--tx);margin-bottom:8px;text-align:center;}
 @media(max-width:768px){
   .layout{flex-direction:column;gap:0;padding:12px 12px 80px;}
   .hd-outer{padding:12px 12px 0;}
   .sidebar{width:100%;position:static;display:none;}
   .sidebar.mob-open{display:block;}
   .sb-mob-btn{display:block;}
+  /* ヘッダー: バッジをフロー内に */
+  .ubw{position:static;margin-top:12px;justify-content:flex-start;}
+  /* タブ: 横スクロール */
+  .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;width:100%;max-width:100%;}
+  .tab{padding:8px 14px;font-size:12px;white-space:nowrap;}
+  /* 各種グリッド調整 */
+  .rc3{grid-template-columns:1fr 1fr;}
+  .hd{padding:20px 20px 16px;}
+  .hero-val{font-size:40px;}
+  /* 週次チェックのマイルストーングリッド */
+  .wk-ms-grid{grid-template-columns:1fr 1fr !important;}
 }
 </style>
 </head>
@@ -349,9 +362,14 @@ body{background:#fff;}
     <div class="sb-hd">📁 マイ記録</div>
     <button class="sb-save-btn" onclick="openRecModal()">＋ 今月を保存</button>
     <div id="sbMyRecs"><div class="sb-empty">記録はありません</div></div>
+    <button class="sb-export-btn" onclick="exportUserData()">📤 自分のデータを書き出す</button>
   </div>
   <div class="sb-card">
     <div class="sb-hd">👥 チームの記録</div>
+    <label class="sb-import-lbl">
+      📥 メンバーデータを読み込む
+      <input type="file" accept=".json" style="display:none" onchange="importMemberData(this.files[0]);this.value=''">
+    </label>
     <div id="sbTeamRecs"><div class="sb-empty">—</div></div>
   </div>
 </div>
@@ -1523,6 +1541,45 @@ function toggleSidebar() {
   if (btn) btn.textContent = open ? '📁 記録を閉じる ▴' : '📁 記録・メンバーを見る ▾';
 }
 
+function exportUserData() {
+  if (!currentUser) return;
+  const s = loadStore();
+  const userData = s.users[currentUser] || {};
+  const payload = JSON.stringify({ user: currentUser, data: userData }, null, 2);
+  const blob = new Blob([payload], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${currentUser}_活動データ.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importMemberData(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const json = JSON.parse(e.target.result);
+      const name = json.user;
+      const data = json.data;
+      if (!name || !data) { alert('無効なファイルです'); return; }
+      if (name === currentUser) { alert('自分自身のデータは読み込めません'); return; }
+      if (!confirm(`「${name}」のデータを追加しますか？`)) return;
+      const s = loadStore();
+      if (!s.users) s.users = {};
+      s.users[name] = data;
+      saveStore(s);
+      renderSidebar();
+      renderUserDrop();
+      alert(`「${name}」のデータを追加しました`);
+    } catch(err) {
+      alert('ファイルの読み込みに失敗しました');
+    }
+  };
+  reader.readAsText(file);
+}
+
 // ── WEEKLY TAB ──
 function calcWeekly() {
   const wk = Math.max(1, ST.weeksLeft);
@@ -1581,7 +1638,7 @@ function renderWeeklyTab() {
   const milestoneCard = hasGoal ? `
     <div class="card" style="margin-bottom:14px">
       <div class="card-ttl">今週のマイルストーン（月次目標 ÷ 残り${wk}週）</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center">
+      <div class="wk-ms-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center">
         ${[['PR',c.weekGoalPr,'pill-pr'],['NET',c.weekGoalNet,'pill-net'],['切替',c.weekGoalSw,'pill-sw'],['合計',c.weekGoal,'']].map(([label,val,cls]) => `
           <div style="background:#F9F9F9;border-radius:12px;padding:12px 6px">
             ${cls ? `<div class="pill ${cls}" style="margin-bottom:6px;display:inline-block">${label}</div>` : `<div style="font-size:11px;font-weight:900;color:var(--mu);margin-bottom:6px">${label}</div>`}
