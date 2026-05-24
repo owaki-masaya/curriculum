@@ -286,14 +286,14 @@ body{background:#fff;}
   .sidebar{width:100%;position:static;display:none;}
   .sidebar.mob-open{display:block;}
   .sb-mob-btn{display:block;}
-  /* ヘッダー: バッジをフロー内に */
-  .ubw{position:static;margin-top:12px;justify-content:flex-start;}
-  /* タブ: 横スクロール */
-  .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;width:100%;max-width:100%;}
+  /* ヘッダー: 保存ボタン非表示 + padding で右余白確保 */
+  .save-hd-btn{display:none;}
+  .hd{padding:20px 110px 16px 20px;}
+  /* タブ: 横スクロール強制 */
+  .tabs{overflow-x:auto !important;-webkit-overflow-scrolling:touch;flex-wrap:nowrap !important;width:100% !important;max-width:100%;}
   .tab{padding:8px 14px;font-size:12px;white-space:nowrap;}
   /* 各種グリッド調整 */
   .rc3{grid-template-columns:1fr 1fr;}
-  .hd{padding:20px 20px 16px;}
   .hero-val{font-size:40px;}
   /* 週次チェックのマイルストーングリッド */
   .wk-ms-grid{grid-template-columns:1fr 1fr !important;}
