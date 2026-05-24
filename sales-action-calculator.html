@@ -234,9 +234,35 @@ body{background:#fff;}
 .ud-av{width:22px;height:22px;border-radius:50%;background:#1a1a1a;color:var(--y);font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .ud-div{height:1px;background:var(--bdr);margin:6px 4px;}
 .ud-lo{color:var(--ng) !important;}
+/* ── Monthly Record Modal ── */
+.rec-modal{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9998;display:flex;align-items:center;justify-content:center;padding:24px;}
+.rec-box{background:#fff;border-radius:20px;padding:28px 24px;width:100%;max-width:380px;box-shadow:0 12px 48px rgba(0,0,0,.18);}
+.rec-ttl{font-size:18px;font-weight:900;color:#1a1a1a;margin-bottom:6px;}
+.rec-sub{font-size:12px;color:var(--mu);font-weight:700;margin-bottom:18px;}
+.rec-input{width:100%;border:2.5px solid var(--bdr2);border-radius:12px;padding:13px 14px;font-family:var(--fm);font-size:17px;font-weight:700;color:var(--tx);background:#FAFAFA;outline:none;transition:border-color .15s;margin-bottom:12px;display:block;}
+.rec-input:focus{border-color:var(--y);}
+.rec-save-btn{width:100%;padding:14px;border-radius:12px;font-size:14px;font-weight:900;cursor:pointer;border:none;background:var(--y);color:#1a1a1a;font-family:var(--ff);box-shadow:0 4px 14px rgba(255,214,0,.4);margin-bottom:8px;display:block;}
+.rec-cancel-btn{width:100%;padding:11px;border-radius:12px;font-size:13px;font-weight:800;cursor:pointer;border:2px solid var(--bdr2);background:#fff;color:var(--mu);font-family:var(--ff);display:block;}
+.rec-item{padding:9px 12px;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background .1s;}
+.rec-item:hover{background:#F5F5F5;}
+.rec-item-name{font-size:12px;font-weight:800;color:var(--tx);}
+.rec-item-date{font-size:10px;color:var(--mu);font-weight:700;}
+.rec-item-del{font-size:10px;color:var(--ng);font-weight:900;padding:2px 6px;border-radius:6px;border:none;background:transparent;cursor:pointer;}
 </style>
 </head>
 <body>
+<!-- MONTHLY RECORD MODAL -->
+<div id="recModal" class="rec-modal" style="display:none">
+  <div class="rec-box">
+    <div class="rec-ttl">月次記録を保存</div>
+    <div class="rec-sub">記録名をつけて保存します。後から読み込めます。</div>
+    <input id="recNameInput" class="rec-input" type="text" placeholder="例: 2025年5月"
+      onkeydown="if(event.key==='Enter')doSaveRecord()">
+    <button class="rec-save-btn" onclick="doSaveRecord()">保存する</button>
+    <button class="rec-cancel-btn" onclick="closeRecModal()">キャンセル</button>
+  </div>
+</div>
+
 <!-- LOGIN OVERLAY -->
 <div id="loginOverlay" class="login-overlay">
   <div class="login-box">
@@ -269,6 +295,10 @@ body{background:#fff;}
     <div class="udrop" id="userDrop">
       <div class="udrop-sec">メンバー切替</div>
       <div id="userDropItems"></div>
+      <div class="ud-div"></div>
+      <div class="udrop-sec">月次記録</div>
+      <div class="ud-item" style="color:var(--pr)" onclick="openRecModal()">＋ 今月の活動を保存</div>
+      <div id="recList"></div>
       <div class="ud-div"></div>
       <div class="ud-item ud-lo" onclick="logout()">ログアウト</div>
     </div>
@@ -663,7 +693,7 @@ function renderShortageCard(c) {
     const pctCol     = extPct>=100?'var(--ok)':extPct>=70?'var(--wa)':'var(--ng)';
     const basePct    = isOver ? 100 : t.goalCnt > 0 ? Math.min(100, t.landing / t.goalCnt * 100) : 0;
     const misBarW    = isOver ? 0 : Math.min(100 - basePct, t.goalCnt > 0 ? misCnt * t.rate / t.goalCnt * 100 : 0);
-    const pctTxt     = isOver ? `${extPct.toFixed(0)}%（+${excessCnt}件超過）` : `${extPct.toFixed(0)}%`;
+    const pctTxt     = `${extPct.toFixed(0)}%`;
     const arpu       = key === 'pr' ? c.prArpu : key === 'sw' ? c.swArpu : 0;
     const landedFromMis = misCnt * t.rate;
     const misRev     = arpu > 0 && landedFromMis > 0 ? landedFromMis * arpu : 0;
@@ -737,11 +767,9 @@ function renderShortageCard(c) {
                  ${misBarW>0?`<div style="position:absolute;left:${basePct}%;top:0;height:100%;width:${misBarW}%;background:var(--mis)"></div>`:''}`
             }
           </div>
-          ${isOver
-            ? `<div style="margin-top:7px;font-size:11px;color:var(--ok);font-weight:900">✅ 目標達成見込み（+${excessCnt}件 超過）</div>`
-            : extDiff > 0
-              ? `<div style="margin-top:7px;font-size:11px;color:var(--ng);font-weight:900">まだ ${f1(extDiff)}件 不足</div>`
-              : `<div style="margin-top:7px;font-size:11px;color:var(--ok);font-weight:900">✅ 目標達成見込み</div>`
+          ${extDiff > 0
+            ? `<div style="margin-top:7px;font-size:11px;color:var(--ng);font-weight:900">まだ ${f1(extDiff)}件 不足</div>`
+            : `<div style="margin-top:7px;font-size:11px;color:var(--ok);font-weight:900">✅ 目標達成見込み</div>`
           }
         </div>
       </div>`;
@@ -850,7 +878,7 @@ function renderResultTab() {
     const basePct   = isOver ? 100 : t.goalCnt > 0 ? Math.min(100, t.landing / t.goalCnt * 100) : 0;
     const misWidth  = isOver ? 0 : Math.min(100 - basePct, t.goalCnt > 0 ? misAdded / t.goalCnt * 100 : 0);
     const pctCol    = extPct>=100?'var(--ok)':extPct>=70?'var(--wa)':'var(--ng)';
-    const pctTxt    = isOver ? `${extPct.toFixed(0)}%（+${excessCnt}件超過）` : `${extPct.toFixed(0)}%`;
+    const pctTxt    = `${extPct.toFixed(0)}%`;
     return `
       <div class="pb-wrap">
         <div class="pb-label">
@@ -954,7 +982,7 @@ function renderTower(c) {
     const pctCol  = extPct>=100?'var(--ok)':extPct>=70?'var(--wa)':'var(--ng)';
     const basePct = isOver ? 100 : t.goalCnt > 0 ? Math.min(100, landing / t.goalCnt * 100) : 0;
     const misBarW = isOver ? 0 : Math.min(100 - basePct, t.goalCnt > 0 ? t.misL / t.goalCnt * 100 : 0);
-    const pctTxt  = isOver ? `${extPct.toFixed(0)}%（+${excessVal}超過）` : `${extPct.toFixed(0)}%`;
+    const pctTxt  = `${extPct.toFixed(0)}%`;
     const boxBg   = isOver ? '#F0FDF4' : 'var(--misll)';
     const boxBdr  = isOver ? '#86EFAC' : 'var(--misd)';
 
@@ -997,8 +1025,7 @@ function renderTower(c) {
             </div>
           </div>
           ${extDiff > 0 ? `<div style="display:flex;justify-content:space-between;padding-top:5px;border-top:1px dashed var(--misd)"><span style="font-size:10px;font-weight:900;color:var(--ng)">差分（不足）</span><span style="font-family:var(--fm);font-size:13px;font-weight:700;color:var(--ng)">${fv(t,extDiff)}</span></div>` : ''}
-          ${extDiff <= 0 ? `<div style="background:var(--ok);border-radius:8px;padding:7px 10px;text-align:center;font-size:11px;font-weight:900;color:#fff">✅ 目標達成見込み${isOver?`（+${excessVal}超過）`:''}
-          </div>` : ''}
+          ${extDiff <= 0 ? `<div style="background:var(--ok);border-radius:8px;padding:7px 10px;text-align:center;font-size:11px;font-weight:900;color:#fff">✅ 目標達成見込み</div>` : ''}
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           ${[['1.受注済み','#1565C0'],['2.進行中商談','#90CAF9'],['3.未商談からの獲得','var(--mis)'],['差分','#EEF6FF','1.5px solid #90CAF9']].map(([l,c,b])=>`<div style="display:flex;align-items:center;gap:3px"><div style="width:8px;height:8px;border-radius:2px;background:${c};border:${b||'none'}"></div><span style="font-size:9px;font-weight:800;color:var(--mu)">${l}</span></div>`).join('')}
@@ -1034,7 +1061,7 @@ function renderMisInput(c) {
     const pctCol    = extPct>=100?'var(--ok)':extPct>=70?'var(--wa)':'var(--ng)';
     const basePct   = isOver ? 100 : t.goalCnt > 0 ? Math.min(100, t.landing / t.goalCnt * 100) : 0;
     const misBarW   = isOver ? 0 : Math.min(100 - basePct, t.goalCnt > 0 ? misCnt * t.rate / t.goalCnt * 100 : 0);
-    const pctTxt    = isOver ? `${extPct.toFixed(0)}%（+${excessCnt}件超過）` : `${extPct.toFixed(0)}%`;
+    const pctTxt    = `${extPct.toFixed(0)}%`;
 
     const arpu      = key === 'pr' ? c.prArpu : key === 'sw' ? c.swArpu : 0;
     const misRev    = arpu > 0 && misCnt > 0 ? misCnt * arpu : 0;
@@ -1072,11 +1099,9 @@ function renderMisInput(c) {
                  ${misBarW>0?`<div style="position:absolute;left:${basePct}%;top:0;height:100%;width:${misBarW}%;background:var(--y)"></div>`:''}`
             }
           </div>
-          ${isOver
-            ? `<div style="margin-top:8px;font-size:11px;color:var(--ok);font-weight:900">✅ 目標達成見込み（+${excessCnt}件 超過）</div>`
-            : extDiff > 0
-              ? `<div style="margin-top:8px;font-size:11px;color:var(--ng);font-weight:900">まだ ${f1(extDiff)}件 不足</div>`
-              : `<div style="margin-top:8px;font-size:11px;color:var(--ok);font-weight:900">✅ 目標達成見込み</div>`
+          ${extDiff > 0
+            ? `<div style="margin-top:8px;font-size:11px;color:var(--ng);font-weight:900">まだ ${f1(extDiff)}件 不足</div>`
+            : `<div style="margin-top:8px;font-size:11px;color:var(--ok);font-weight:900">✅ 目標達成見込み</div>`
           }
         </div>
       </div>`;
@@ -1243,6 +1268,7 @@ function renderUserDrop() {
       <div class="ud-av">${n.charAt(0).toUpperCase()}</div>
       <span>${n}</span>${n===currentUser?' <span style="margin-left:auto;font-size:10px;color:var(--ok)">✓</span>':''}
     </div>`).join('');
+  renderRecList();
 }
 
 function toggleUserMenu() { $('userDrop').classList.toggle('open'); }
@@ -1250,6 +1276,7 @@ function closeUserDrop()  { $('userDrop').classList.remove('open'); }
 
 document.addEventListener('click', e => {
   if (!e.target.closest('.ubw')) closeUserDrop();
+  if (e.target === $('recModal')) closeRecModal();
 });
 
 function restoreInputs() {
@@ -1272,6 +1299,72 @@ function restoreInputs() {
     $('slVal').textContent = ST.weeksLeft;
   }
   // inNeg inputs are in the dynamically rendered shortage card; no static restore needed
+}
+
+// ── MONTHLY RECORDS ──
+function openRecModal() {
+  closeUserDrop();
+  const now = new Date();
+  $('recNameInput').value = `${now.getFullYear()}年${now.getMonth()+1}月`;
+  $('recModal').style.display = 'flex';
+  setTimeout(() => { const el = $('recNameInput'); el.focus(); el.select(); }, 50);
+}
+
+function closeRecModal() {
+  $('recModal').style.display = 'none';
+}
+
+function doSaveRecord() {
+  const name = $('recNameInput').value.trim();
+  if (!name || !currentUser) return;
+  const s = loadStore();
+  if (!s.users[currentUser]) return;
+  if (!s.users[currentUser].monthlyRecords) s.users[currentUser].monthlyRecords = {};
+  s.users[currentUser].monthlyRecords[name] = {
+    savedAt: new Date().toISOString().slice(0,10),
+    data: getUserData(),
+  };
+  saveStore(s);
+  closeRecModal();
+  renderUserDrop();
+}
+
+function loadRecord(name) {
+  const s = loadStore();
+  const rec = s.users[currentUser]?.monthlyRecords?.[name];
+  if (!rec) return;
+  if (!confirm(`「${name}」の記録を読み込みます。現在の入力は上書きされます。よろしいですか？`)) return;
+  applyUserData(rec.data);
+  restoreInputs();
+  update();
+  closeUserDrop();
+}
+
+function deleteRecord(name) {
+  if (!confirm(`「${name}」を削除しますか？`)) return;
+  const s = loadStore();
+  if (s.users[currentUser]?.monthlyRecords) {
+    delete s.users[currentUser].monthlyRecords[name];
+    saveStore(s);
+    renderUserDrop();
+  }
+}
+
+function renderRecList() {
+  const s = loadStore();
+  const recs = s.users[currentUser]?.monthlyRecords || {};
+  const names = Object.keys(recs).sort().reverse();
+  const el = $('recList');
+  if (!el) return;
+  if (!names.length) { el.innerHTML = '<div style="font-size:11px;color:var(--mu);padding:4px 12px;font-weight:700">保存済みの記録はありません</div>'; return; }
+  el.innerHTML = names.map(n => `
+    <div class="rec-item">
+      <div onclick="loadRecord('${n.replace(/'/g,"\\'")}')">
+        <div class="rec-item-name">${n}</div>
+        <div class="rec-item-date">${recs[n].savedAt}</div>
+      </div>
+      <button class="rec-item-del" onclick="event.stopPropagation();deleteRecord('${n.replace(/'/g,"\\'")}')">削除</button>
+    </div>`).join('');
 }
 
 // ── TAB SWITCH ──
