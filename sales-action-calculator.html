@@ -414,7 +414,7 @@ body{background:#fff;}
 
   <!-- NET -->
   <div class="card">
-    <div class="card-ttl"><span class="pill pill-net">NET</span>ネット予約 目標</div>
+    <div class="card-ttl"><span class="pill pill-net">ネット予約</span> 目標</div>
     <div class="fg fg2">
       <div class="f"><label>ネット件数目標</label><input id="inp-net-cnt" type="number" placeholder="例: 3" onchange="sg('net_cnt',this.value)"></div>
       <div class="f"><label>平均受注率（%）</label><input id="inp-net-rate" type="number" placeholder="例: 50" onchange="sg('net_rate',this.value)"></div>
@@ -478,7 +478,7 @@ body{background:#fff;}
     </div>
     <div class="fg fg2">
       <div class="f"><label>想定ARPU（翌々月PR・円）</label><input id="inp-pr-arpu-m2" type="number" placeholder="例: 20000" onchange="sg('pr_arpu_m2',this.value)"></div>
-      <div class="f"><label>NET件数目標（翌々月）</label><input id="inp-net-cnt-m2" type="number" placeholder="例: 2" onchange="sg('net_cnt_m2',this.value)"></div>
+      <div class="f"><label>ネット予約件数目標（翌々月）</label><input id="inp-net-cnt-m2" type="number" placeholder="例: 2" onchange="sg('net_cnt_m2',this.value)"></div>
     </div>
   </div>
 
@@ -491,7 +491,7 @@ body{background:#fff;}
   <!-- Type tabs -->
   <div class="type-tabs" id="typeTabs">
     <button class="tt tt-pr" onclick="setActiveType('pr')">PR</button>
-    <button class="tt"       onclick="setActiveType('net')">NET</button>
+    <button class="tt"       onclick="setActiveType('net')">ネット予約</button>
     <button class="tt"       onclick="setActiveType('sw')">切替</button>
   </div>
 
@@ -686,7 +686,7 @@ function renderYomiCard() {
   const t = ST.activeType;
   const yd = ST.yomi[t];
   const PILL = { pr:'pill-pr', net:'pill-net', sw:'pill-sw' };
-  const LABEL= { pr:'PR', net:'NET', sw:'切替' };
+  const LABEL= { pr:'PR', net:'ネット予約', sw:'切替' };
   const goalCnt = nv(ST.goal[t + '_cnt']);
   const tc = calcType(t, t + '_cnt', t + '_rate');
 
@@ -728,7 +728,7 @@ function renderCalcBlock() {
 
   const typeDefs = [
     { key:'pr',  label:'PR',  t:pr,  ratePct:nv(ST.goal.pr_rate),  pillCls:'pill-pr'  },
-    { key:'net', label:'NET', t:net, ratePct:nv(ST.goal.net_rate), pillCls:'pill-net' },
+    { key:'net', label:'ネット予約', t:net, ratePct:nv(ST.goal.net_rate), pillCls:'pill-net' },
     { key:'sw',  label:'切替', t:sw, ratePct:nv(ST.goal.sw_rate),  pillCls:'pill-sw'  },
   ].filter(x => x.t.goalCnt > 0);
 
@@ -792,7 +792,7 @@ function renderShortageCard(c) {
   const { pr, net, sw } = c;
   const types = [
     { key:'pr',  label:'PR',  t:pr,  pillCls:'pill-pr'  },
-    { key:'net', label:'NET', t:net, pillCls:'pill-net' },
+    { key:'net', label:'ネット予約', t:net, pillCls:'pill-net' },
     { key:'sw',  label:'切替', t:sw,  pillCls:'pill-sw'  },
   ].filter(x => x.t.goalCnt > 0);
   if (!types.length) return '';
@@ -994,7 +994,7 @@ function renderResultTab() {
   const pbGrad = { pr:'linear-gradient(90deg,var(--pr),#60A5FA)', net:'linear-gradient(90deg,var(--net),#22D3EE)', sw:'linear-gradient(90deg,var(--sw),#A78BFA)' };
   const typePb = [
     { label:'PR',  key:'pr',  t:pr,  extPct:c.prExtPct,  extLanding:c.prExtLanding  },
-    { label:'NET', key:'net', t:net, extPct:c.netExtPct, extLanding:c.netExtLanding },
+    { label:'ネット予約', key:'net', t:net, extPct:c.netExtPct, extLanding:c.netExtLanding },
     { label:'切替', key:'sw', t:sw,  extPct:c.swExtPct,  extLanding:c.swExtLanding  },
   ].filter(x => x.t.goalCnt > 0).map(({ label, key, t, extPct, extLanding }) => {
     const misAdded  = nv(ST.misTarget[key]) * t.rate;
@@ -1047,7 +1047,7 @@ function renderResultTab() {
           <div style="font-size:11px;color:rgba(26,26,26,.5);font-weight:800;margin-top:4px">約 ${m2DailyActions} 件 / 日</div>
         </div>` : ''}
       </div>
-      <div style="text-align:center;font-size:11px;color:var(--mu);font-weight:700">来月掲載: ${totalActions}件（進行中${c.inNeg}件 ＋ 未商談${c.newMeetings}件）${m2Defined?` ／ 翌々月追加: ${m2Actions}件（PR:${c.prM2Opps}件＋NET:${c.netM2Opps}件）`:''}</div>
+      <div style="text-align:center;font-size:11px;color:var(--mu);font-weight:700">来月掲載: ${totalActions}件（進行中${c.inNeg}件 ＋ 未商談${c.newMeetings}件）${m2Defined?` ／ 翌々月追加: ${m2Actions}件（PR:${c.prM2Opps}件＋ネット予約:${c.netM2Opps}件）`:''}</div>
     </div>` : '';
 
   // Week plan
@@ -1083,7 +1083,7 @@ function renderTower(c) {
   const towers = [
     { label:'PR件数',  pillCls:'pill-pr',
       goalCnt:pr.goalCnt,  zumi:prZumi,  prog:prProg,  misL:prMisL,  isRev:false },
-    { label:'NET件数', pillCls:'pill-net',
+    { label:'ネット予約件数', pillCls:'pill-net',
       goalCnt:net.goalCnt, zumi:netZumi, prog:netProg, misL:netMisL, isRev:false },
     { label:'売上合計', pillCls:'pill-rev',
       goalCnt:goalRev, zumi:revZumi, prog:revProg, misL:revMisL, isRev:true },
@@ -1171,7 +1171,7 @@ function renderTower(c) {
 function renderMisInput(c) {
   const types = [
     { key:'pr',  label:'PR',  t:c.pr,  pillCls:'pill-pr'  },
-    { key:'net', label:'NET', t:c.net, pillCls:'pill-net' },
+    { key:'net', label:'ネット予約', t:c.net, pillCls:'pill-net' },
     { key:'sw',  label:'切替', t:c.sw,  pillCls:'pill-sw'  },
   ].filter(x => x.t.goalCnt > 0);
   if (!types.length) return '';
@@ -1686,7 +1686,7 @@ function renderWeeklyTab() {
     <div class="card" style="margin-bottom:14px">
       <div class="card-ttl">今週のマイルストーン（自由入力）</div>
       <div class="wk-ms-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center">
-        ${[['pr','PR','pill-pr'],['net','NET','pill-net'],['sw','切替','pill-sw'],['total','合計','']].map(([key,label,cls]) => `
+        ${[['pr','PR','pill-pr'],['net','ネット予約','pill-net'],['sw','切替','pill-sw'],['total','合計','']].map(([key,label,cls]) => `
           <div style="background:#F9F9F9;border-radius:12px;padding:12px 8px">
             ${cls ? `<div class="pill ${cls}" style="margin-bottom:8px;display:inline-block">${label}</div>` : `<div style="font-size:11px;font-weight:900;color:var(--mu);margin-bottom:8px">${label}</div>`}
             <input type="number" min="0" placeholder="—" value="${ST.weeklyMilestones[key]}"
