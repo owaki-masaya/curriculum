@@ -469,20 +469,21 @@ body{background:#fff;}
     </div>
   </div>
 
-  <!-- 翌々月獲得目標 -->
+  <!-- 翌々月仮目標 & 済Aネタ -->
   <div class="card">
-    <div class="card-ttl">翌々月 獲得目標（来月活動で仕込むパイプライン）</div>
-    <div class="fg fg2" style="margin-bottom:12px">
-      <div class="f"><label>来月の済Aネタ目標 ― PR</label><input id="inp-zumi-a-pr" type="number" placeholder="例: 5" onchange="sg('zumiA_pr',this.value)"></div>
-      <div class="f"><label>来月の済Aネタ目標 ― ネット予約</label><input id="inp-zumi-a-net" type="number" placeholder="例: 3" onchange="sg('zumiA_net',this.value)"></div>
+    <div class="card-ttl">翌々月 仮目標</div>
+    <div style="font-size:11px;color:var(--mu);font-weight:700;margin-bottom:10px">翌々月の獲得目標を仮置きで入力（確定でなくてOK）</div>
+    <div class="fg fg3">
+      <div class="f"><label>PR件数目標</label><input id="inp-pr-cnt-m2" type="number" placeholder="例: 3" onchange="sg('pr_cnt_m2',this.value)"></div>
+      <div class="f"><label>ネット予約件数目標</label><input id="inp-net-cnt-m2" type="number" placeholder="例: 2" onchange="sg('net_cnt_m2',this.value)"></div>
+      <div class="f"><label>売上目標（円）</label><input id="inp-rev-m2" type="number" placeholder="例: 80000" onchange="sg('rev_m2',this.value)"></div>
     </div>
-    <div class="fg fg2" style="margin-bottom:12px">
-      <div class="f"><label>PR件数目標（翌々月）</label><input id="inp-pr-cnt-m2" type="number" placeholder="例: 3" onchange="sg('pr_cnt_m2',this.value)"></div>
-      <div class="f"><label>PR売上目標（翌々月・円）</label><input id="inp-pr-rev-m2" type="number" placeholder="例: 60000" onchange="sg('pr_rev_m2',this.value)"></div>
-    </div>
+    <div style="border-top:1.5px solid var(--bdr2);margin:14px 0 10px"></div>
+    <div style="font-size:12px;font-weight:900;color:var(--tx);margin-bottom:4px">月末までに作りたい 済Aネタ数</div>
+    <div style="font-size:11px;color:var(--mu);font-weight:700;margin-bottom:8px">翌々月掲載に向けて今月中に仕込むパイプライン件数</div>
     <div class="fg fg2">
-      <div class="f"><label>想定ARPU（翌々月PR・円）</label><input id="inp-pr-arpu-m2" type="number" placeholder="例: 20000" onchange="sg('pr_arpu_m2',this.value)"></div>
-      <div class="f"><label>ネット予約件数目標（翌々月）</label><input id="inp-net-cnt-m2" type="number" placeholder="例: 2" onchange="sg('net_cnt_m2',this.value)"></div>
+      <div class="f"><label>PR</label><input id="inp-zumi-a-pr" type="number" placeholder="例: 5" onchange="sg('zumiA_pr',this.value)"></div>
+      <div class="f"><label>ネット予約</label><input id="inp-zumi-a-net" type="number" placeholder="例: 3" onchange="sg('zumiA_net',this.value)"></div>
     </div>
   </div>
 
@@ -524,7 +525,7 @@ const ST = {
   tab: 'goal',
   activeType: 'pr',
   goal: { pr_cnt:'', pr_rev:'', pr_rate:'', pr_arpu_est:'', net_cnt:'', net_rate:'', sw_cnt:'', sw_rev:'', sw_rate:'', sw_arpu_est:'',
-    pr_cnt_m2:'', pr_rev_m2:'', pr_arpu_m2:'', net_cnt_m2:'', zumiA_pr:'', zumiA_net:'' },
+    pr_cnt_m2:'', pr_rev_m2:'', pr_arpu_m2:'', net_cnt_m2:'', zumiA_pr:'', zumiA_net:'', rev_m2:'' },
   yomi: {
     pr:  { zumi:'', a:'', b:'', c:'', d:'', mis:'' },
     net: { zumi:'', a:'', b:'', c:'', d:'', mis:'' },
@@ -950,6 +951,82 @@ function renderShortageCard(c) {
     </div>`;
 }
 
+// ── RENDER: 翌々月準備カード ──
+function renderM2Card(c) {
+  const zumiApr   = nv(ST.goal.zumiA_pr);
+  const zumiAnet  = nv(ST.goal.zumiA_net);
+  const prCntM2   = nv(ST.goal.pr_cnt_m2);
+  const netCntM2  = nv(ST.goal.net_cnt_m2);
+  const revM2     = nv(ST.goal.rev_m2);
+  const hasM2Target = prCntM2 > 0 || netCntM2 > 0 || revM2 > 0;
+  const hasZumiA    = zumiApr > 0 || zumiAnet > 0;
+  if (!hasM2Target && !hasZumiA) return '';
+
+  const zumiAprActs  = zumiApr  > 0 && c.pr.rate  > 0 ? cl(zumiApr  / c.pr.rate)  : 0;
+  const zumiAnetActs = zumiAnet > 0 && c.net.rate > 0 ? cl(zumiAnet / c.net.rate) : 0;
+  const zumiATotalActs = zumiAprActs + zumiAnetActs;
+  const m2Total   = c.totalActions + zumiATotalActs;
+  const m2Weekly  = cl(m2Total / 4);
+  const m2Daily   = Math.ceil(m2Weekly / 5);
+
+  const m2TargetHtml = hasM2Target ? `
+    <div style="background:#F9F9F9;border:1.5px solid var(--bdr2);border-radius:10px;padding:10px 12px;margin-bottom:10px">
+      <div style="font-size:10px;font-weight:900;color:var(--mu);letter-spacing:.06em;margin-bottom:6px">翌々月 仮目標</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        ${prCntM2 > 0  ? `<div style="display:flex;align-items:center;gap:4px"><span class="pill pill-pr"  style="font-size:9px;padding:2px 7px">PR</span><span style="font-family:var(--fm);font-size:15px;font-weight:700">${prCntM2}件</span></div>` : ''}
+        ${netCntM2 > 0 ? `<div style="display:flex;align-items:center;gap:4px"><span class="pill pill-net" style="font-size:9px;padding:2px 7px">ネット予約</span><span style="font-family:var(--fm);font-size:15px;font-weight:700">${netCntM2}件</span></div>` : ''}
+        ${revM2 > 0    ? `<div style="display:flex;align-items:center;gap:4px"><span class="pill pill-rev" style="font-size:9px;padding:2px 7px">売上</span><span style="font-family:var(--fm);font-size:15px;font-weight:700">${yen(revM2)}</span></div>` : ''}
+      </div>
+    </div>` : '';
+
+  const zumiAHtml = hasZumiA ? `
+    <div style="margin-bottom:10px">
+      <div style="font-size:12px;font-weight:900;color:var(--tx);margin-bottom:6px">月末までに作る 済Aネタ → 必要商談数</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${zumiApr > 0 ? `
+          <div style="display:flex;justify-content:space-between;align-items:center;background:#DBEAFE;border-radius:8px;padding:7px 10px">
+            <span style="font-size:12px;font-weight:900;color:var(--pr)">PR 済Aネタ <span style="font-family:var(--fm)">${zumiApr}</span>件</span>
+            <span style="font-size:12px;font-weight:900;color:var(--pr)">÷ 受注率${(c.pr.rate*100).toFixed(0)}% ＝ <span style="font-family:var(--fm);font-size:16px">${zumiAprActs}</span>商談</span>
+          </div>` : ''}
+        ${zumiAnet > 0 ? `
+          <div style="display:flex;justify-content:space-between;align-items:center;background:#CFFAFE;border-radius:8px;padding:7px 10px">
+            <span style="font-size:12px;font-weight:900;color:var(--net)">ネット予約 済Aネタ <span style="font-family:var(--fm)">${zumiAnet}</span>件</span>
+            <span style="font-size:12px;font-weight:900;color:var(--net)">÷ 受注率${(c.net.rate*100).toFixed(0)}% ＝ <span style="font-family:var(--fm);font-size:16px">${zumiAnetActs}</span>商談</span>
+          </div>` : ''}
+        <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:900;color:var(--tx);padding:4px 2px">
+          <span>翌々月準備 追加商談合計</span>
+          <span style="font-family:var(--fm);font-size:15px;color:#E65100">+${zumiATotalActs}件</span>
+        </div>
+      </div>
+    </div>` : '';
+
+  const compareHtml = hasZumiA ? `
+    <div style="background:var(--yl);border:2px solid var(--yd);border-radius:14px;padding:14px">
+      <div style="font-size:10px;font-weight:900;color:#7a4500;letter-spacing:.06em;margin-bottom:10px;text-transform:uppercase">翌々月準備を加味した月間活動数</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:rgba(255,255,255,.6);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:10px;font-weight:900;color:var(--mu);margin-bottom:2px">来月掲載のみ</div>
+          <div style="font-size:10px;color:var(--mu);font-weight:700;margin-bottom:6px">月間 ${c.totalActions}件</div>
+          <div style="font-family:var(--fm);font-size:34px;font-weight:700;color:#1a1a1a;line-height:1">${c.weeklyActions}</div>
+          <div style="font-size:11px;color:var(--mu);font-weight:700;margin-top:4px">件 / 週</div>
+        </div>
+        <div style="background:rgba(255,255,255,.9);border-radius:10px;padding:12px;text-align:center;border:2px solid var(--yd)">
+          <div style="font-size:10px;font-weight:900;color:#E65100;margin-bottom:2px">翌々月準備込み</div>
+          <div style="font-size:10px;color:var(--mu);font-weight:700;margin-bottom:6px">月間 ${m2Total}件（＋${zumiATotalActs}件）</div>
+          <div style="font-family:var(--fm);font-size:34px;font-weight:700;color:#E65100;line-height:1">${m2Weekly}</div>
+          <div style="font-size:11px;color:var(--mu);font-weight:700;margin-top:4px">件 / 週</div>
+          <div style="font-size:10px;color:var(--mu);font-weight:800;margin-top:2px">約 ${m2Daily} 件 / 日</div>
+        </div>
+      </div>
+    </div>` : '';
+
+  return `
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-ttl">翌々月 掲載準備</div>
+      ${m2TargetHtml}${zumiAHtml}${compareHtml}
+    </div>`;
+}
+
 // ── RENDER: RESULT TAB ──
 function renderResultTab() {
   const c = calcAll();
@@ -1038,70 +1115,12 @@ function renderResultTab() {
   // Yomi Tower
   const towerHtml = renderTower(c);
 
-  // 来月/翌々月掲載 シミュレーション
-  const zumiApr  = nv(ST.goal.zumiA_pr);
-  const zumiAnet = nv(ST.goal.zumiA_net);
-  const zumiADefined = zumiApr > 0 || zumiAnet > 0;
-  // 済Aネタ入力時は逆算、未入力は月次目標ベース
-  const zumiAprActs  = zumiADefined && c.pr.rate  > 0 ? cl(zumiApr  / c.pr.rate)  : 0;
-  const zumiAnetActs = zumiADefined && c.net.rate > 0 ? cl(zumiAnet / c.net.rate) : 0;
-  const simM1Total   = zumiADefined ? zumiAprActs + zumiAnetActs : totalActions;
-  const simM2Total   = simM1Total + m2Actions;
-  const simM1Weekly  = cl(simM1Total / 4);
-  const simM2Weekly  = cl(simM2Total / 4);
-  const simM1Daily   = Math.ceil(simM1Weekly / 5);
-  const simM2Daily   = Math.ceil(simM2Weekly / 5);
-  const m2Cnt = nv(ST.goal.pr_cnt_m2) + nv(ST.goal.net_cnt_m2);
-
-  const weekCmpHtml = (totalActions > 0 || zumiADefined) ? `
-    <div class="card" style="margin-bottom:14px">
-      <div class="card-ttl">行動計画 シミュレーション</div>
-      ${zumiADefined ? `
-      <div style="background:var(--yl);border:2px solid var(--yd);border-radius:12px;padding:10px 14px;margin-bottom:12px">
-        <div style="font-size:10px;font-weight:900;color:#7a4500;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">🎯 来月の済Aネタ目標</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          ${zumiApr > 0 ? `<div style="background:#DBEAFE;border-radius:10px;padding:6px 12px;text-align:center">
-            <div style="font-size:9px;font-weight:900;color:var(--pr);letter-spacing:.05em">PR</div>
-            <div style="font-family:var(--fm);font-size:20px;font-weight:700;color:var(--pr)">${zumiApr}件</div>
-            ${c.pr.rate > 0 ? `<div style="font-size:9px;font-weight:800;color:var(--mu)">${zumiAprActs}商談必要</div>` : ''}
-          </div>` : ''}
-          ${zumiAnet > 0 ? `<div style="background:#CFFAFE;border-radius:10px;padding:6px 12px;text-align:center">
-            <div style="font-size:9px;font-weight:900;color:var(--net);letter-spacing:.05em">ネット予約</div>
-            <div style="font-family:var(--fm);font-size:20px;font-weight:700;color:var(--net)">${zumiAnet}件</div>
-            ${c.net.rate > 0 ? `<div style="font-size:9px;font-weight:800;color:var(--mu)">${zumiAnetActs}商談必要</div>` : ''}
-          </div>` : ''}
-          ${m2Cnt > 0 ? `<div style="background:#F5F5F5;border-radius:10px;padding:6px 12px;text-align:center">
-            <div style="font-size:9px;font-weight:900;color:var(--mu);letter-spacing:.05em">翌々月</div>
-            <div style="font-family:var(--fm);font-size:20px;font-weight:700;color:var(--mu)">${m2Cnt}件</div>
-            <div style="font-size:9px;font-weight:800;color:var(--mu)">${m2Actions}商談必要</div>
-          </div>` : ''}
-        </div>
-      </div>` : ''}
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-        <div style="background:#F9F9F9;border-radius:14px;padding:18px;text-align:center;border:2px solid var(--bdr)">
-          <div style="font-size:11px;font-weight:900;color:var(--mu);margin-bottom:4px;letter-spacing:.06em">来月掲載のみ</div>
-          <div style="font-size:10px;color:var(--mu);font-weight:700;margin-bottom:8px">月間 ${simM1Total}件 ÷ 4週</div>
-          <div style="font-family:var(--fm);font-size:38px;font-weight:700;color:#1a1a1a;line-height:1">${simM1Weekly}</div>
-          <div style="font-size:12px;color:var(--mu);font-weight:700;margin-top:6px">件 / 週</div>
-          <div style="font-size:11px;color:var(--mu);font-weight:800;margin-top:4px">約 ${simM1Daily} 件 / 日</div>
-        </div>
-        <div style="background:var(--y);border-radius:14px;padding:18px;text-align:center;border:2px solid var(--yd);box-shadow:var(--sh2)">
-          <div style="font-size:11px;font-weight:900;color:rgba(26,26,26,.55);margin-bottom:4px;letter-spacing:.06em">来月＋翌々月掲載</div>
-          <div style="font-size:10px;color:rgba(26,26,26,.45);font-weight:700;margin-bottom:8px">月間 ${simM2Total}件${m2Actions > 0 ? `（＋翌々月${m2Actions}件）` : ''}</div>
-          <div style="font-family:var(--fm);font-size:38px;font-weight:700;color:#1a1a1a;line-height:1">${simM2Weekly}</div>
-          <div style="font-size:12px;color:rgba(26,26,26,.55);font-weight:700;margin-top:6px">件 / 週</div>
-          <div style="font-size:11px;color:rgba(26,26,26,.5);font-weight:800;margin-top:4px">約 ${simM2Daily} 件 / 日</div>
-        </div>
-      </div>
-      <div style="text-align:center;font-size:11px;color:var(--mu);font-weight:700">${zumiADefined ? `済Aネタ逆算: PR${zumiAprActs}件＋ネット予約${zumiAnetActs}件 ＝ 来月${simM1Total}件` : `来月: ${totalActions}件（進行中${c.inNeg}件 ＋ 未商談${c.newMeetings}件）`}${m2Actions > 0 ? ` ／ 翌々月追加: ${m2Actions}件（PR:${c.prM2Opps}件＋ネット予約:${c.netM2Opps}件）` : ''}</div>
-    </div>` : '';
-
   // Week plan
   const wkHtml = renderWeekPlan(c);
 
   $('tab-result').innerHTML = `
     <div class="al ${alCls}">${alMsg}</div>
-    ${renderShortageCard(c)}${heroHtml}${weekCmpHtml}${rc3Html}${progHtml}${towerHtml}${wkHtml}`;
+    ${renderShortageCard(c)}${heroHtml}${renderM2Card(c)}${rc3Html}${progHtml}${towerHtml}${wkHtml}`;
 }
 
 // ── TOWER ──
@@ -1319,7 +1338,7 @@ function renderWeekPlan(c) {
 const LS_KEY = 'sac_v2';
 let currentUser = null;
 
-const EMPTY_GOAL = { pr_cnt:'', pr_rev:'', pr_rate:'', pr_arpu_est:'', net_cnt:'', net_rate:'', sw_cnt:'', sw_rev:'', sw_rate:'', sw_arpu_est:'', pr_cnt_m2:'', pr_rev_m2:'', pr_arpu_m2:'', net_cnt_m2:'', zumiA_pr:'', zumiA_net:'' };
+const EMPTY_GOAL = { pr_cnt:'', pr_rev:'', pr_rate:'', pr_arpu_est:'', net_cnt:'', net_rate:'', sw_cnt:'', sw_rev:'', sw_rate:'', sw_arpu_est:'', pr_cnt_m2:'', pr_rev_m2:'', pr_arpu_m2:'', net_cnt_m2:'', zumiA_pr:'', zumiA_net:'', rev_m2:'' };
 const EMPTY_YOMI = () => ({ pr:{zumi:'',a:'',b:'',c:'',d:'',mis:''}, net:{zumi:'',a:'',b:'',c:'',d:'',mis:''}, sw:{zumi:'',a:'',b:'',c:'',d:'',mis:''} });
 
 function loadStore() { try { return JSON.parse(localStorage.getItem(LS_KEY) || '{"users":{}}'); } catch(e) { return {users:{}}; } }
@@ -1474,9 +1493,8 @@ function restoreInputs() {
   sv('inp-sw-rate', g.sw_rate);
   sv('inp-sw-arpu', g.sw_arpu_est);
   sv('inp-pr-cnt-m2',  g.pr_cnt_m2);
-  sv('inp-pr-rev-m2',  g.pr_rev_m2);
-  sv('inp-pr-arpu-m2', g.pr_arpu_m2);
   sv('inp-net-cnt-m2', g.net_cnt_m2);
+  sv('inp-rev-m2',     g.rev_m2);
   sv('inp-zumi-a-pr',  g.zumiA_pr);
   sv('inp-zumi-a-net', g.zumiA_net);
   [2,3,4].forEach(n=>{const b=$('wk-btn-'+n);if(b)b.classList.toggle('selected',n===ST.weeksLeft);});
