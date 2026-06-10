@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>月次計画 逆算ツール v2.1</title>
+<title>逆算くん | せいせいくんシリーズ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -322,7 +322,7 @@ body{background:#fff;}
 <!-- LOGIN OVERLAY -->
 <div id="loginOverlay" class="login-overlay">
   <div class="login-box">
-    <div class="login-logo">月次計画<mark>逆算</mark>ツール</div>
+    <div class="login-logo"><span style="font-size:11px;font-weight:800;color:var(--mu);display:block;margin-bottom:4px;letter-spacing:.08em">せいせいくんシリーズ</span><mark>逆算くん</mark></div>
     <div class="login-sub">名前を入力してログイン<br>同じ名前で再ログインすると前回データが復元されます</div>
     <input id="loginNameInput" class="login-input" type="text" placeholder="例: 田中" maxlength="20"
       onkeydown="if(event.key==='Enter')doLogin()">
@@ -338,7 +338,8 @@ body{background:#fff;}
 
 <!-- HEADER -->
 <div class="hd" style="position:relative">
-  <h1><svg width="28" height="28" viewBox="0 0 28 28" fill="none" style="vertical-align:middle;margin-right:8px;margin-bottom:3px"><line x1="7" y1="25" x2="19" y2="3" stroke="#F5A000" stroke-width="2.8" stroke-linecap="round"/><line x1="11.5" y1="25" x2="23.5" y2="3" stroke="#F5A000" stroke-width="2.8" stroke-linecap="round"/><ellipse cx="8.5" cy="22" rx="3" ry="1.5" fill="#1a1a1a" opacity=".15" transform="rotate(-25 8.5 22)"/></svg>月次計画<mark>逆算</mark>ツール</h1>
+  <div style="font-size:10px;font-weight:800;color:var(--mu);letter-spacing:.08em;margin-bottom:2px">せいせいくんシリーズ</div>
+  <h1><svg width="28" height="28" viewBox="0 0 28 28" fill="none" style="vertical-align:middle;margin-right:8px;margin-bottom:3px"><line x1="7" y1="25" x2="19" y2="3" stroke="#F5A000" stroke-width="2.8" stroke-linecap="round"/><line x1="11.5" y1="25" x2="23.5" y2="3" stroke="#F5A000" stroke-width="2.8" stroke-linecap="round"/><ellipse cx="8.5" cy="22" rx="3" ry="1.5" fill="#1a1a1a" opacity=".15" transform="rotate(-25 8.5 22)"/></svg><mark>逆算くん</mark></h1>
   <p>目標 − ヨミ着地 ＝ 差分 → 必要行動数を自動算出</p>
   <div class="month-tag" id="monthTag">—</div>
   <!-- User Badge -->
@@ -518,6 +519,15 @@ body{background:#fff;}
 </div><!-- /main-cnt -->
 </div><!-- /layout -->
 </div><!-- /app -->
+
+<!-- FOOTER -->
+<footer style="margin-top:40px;padding:24px 20px 32px;border-top:1.5px solid var(--bdr2);text-align:center;background:#FAFAFA">
+  <div style="font-size:11px;font-weight:800;color:var(--mu);letter-spacing:.08em;margin-bottom:8px">せいせいくんシリーズ</div>
+  <div style="font-size:13px;font-weight:900;color:var(--tx);margin-bottom:12px"><mark style="background:var(--y);padding:1px 6px;border-radius:4px">逆算くん</mark></div>
+  <div style="font-size:11px;color:var(--mu);font-weight:700;margin-bottom:4px">運営会社</div>
+  <a href="#" style="font-size:14px;font-weight:900;color:var(--tx);text-decoration:none;border-bottom:2px solid var(--y);padding-bottom:1px">せいせいくん</a>
+  <div style="margin-top:16px;font-size:10px;color:#bbb;font-weight:700">© 2025 せいせいくん</div>
+</footer>
 
 <script>
 // ── STATE ──
