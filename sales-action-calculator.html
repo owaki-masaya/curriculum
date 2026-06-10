@@ -979,22 +979,23 @@ function renderM2Card(c) {
       </div>
     </div>` : '';
 
-  // 来月 vs 翌々月 行動数 2パネル（常に表示）
+  // 来月 vs 翌々月 行動数 2パネル（行数・構造を完全統一して高さ・文字位置を揃える）
+  const panelBase = 'display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:14px;padding:14px 10px;text-align:center;box-sizing:border-box';
   const compareHtml = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:${hasZumiA?'10':'0'}px">
-      <div style="background:#F0F4FF;border:2px solid #BFCFFF;border-radius:14px;padding:14px;text-align:center">
-        <div style="font-size:10px;font-weight:900;color:#1565C0;letter-spacing:.04em;margin-bottom:2px">来月掲載</div>
-        <div style="font-size:10px;color:var(--mu);font-weight:700;margin-bottom:6px">月間 ${c.totalActions}件</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:stretch;margin-bottom:${hasZumiA?'10':'0'}px">
+      <div style="${panelBase};background:#F0F4FF;border:2px solid #BFCFFF">
+        <div style="font-size:10px;font-weight:900;color:#1565C0;letter-spacing:.04em;margin-bottom:4px">来月掲載</div>
+        <div style="font-size:10px;color:var(--mu);font-weight:700;margin-bottom:8px;min-height:14px">月間 ${c.totalActions}件</div>
         <div style="font-family:var(--fm);font-size:34px;font-weight:700;color:#1565C0;line-height:1">${c.weeklyActions}</div>
-        <div style="font-size:11px;color:var(--mu);font-weight:700;margin-top:4px">件 / 週</div>
-        <div style="font-size:10px;color:var(--mu);font-weight:800;margin-top:2px">約 ${m1Daily} 件 / 日</div>
+        <div style="font-size:11px;color:var(--mu);font-weight:700;margin-top:6px">件 / 週</div>
+        <div style="font-size:10px;color:var(--mu);font-weight:800;margin-top:4px;min-height:14px">約 ${m1Daily} 件 / 日</div>
       </div>
-      <div style="background:var(--yl);border:2px solid var(--yd);border-radius:14px;padding:14px;text-align:center">
-        <div style="font-size:10px;font-weight:900;color:#E65100;letter-spacing:.04em;margin-bottom:2px">翌々月掲載</div>
-        <div style="font-size:10px;color:var(--mu);font-weight:700;margin-bottom:6px">${hasZumiA ? `月間 ${zumiATotalActs}件（済A逆算）` : '済Aネタを入力'}</div>
+      <div style="${panelBase};background:var(--yl);border:2px solid var(--yd)">
+        <div style="font-size:10px;font-weight:900;color:#E65100;letter-spacing:.04em;margin-bottom:4px">翌々月掲載</div>
+        <div style="font-size:10px;color:var(--mu);font-weight:700;margin-bottom:8px;min-height:14px">${hasZumiA ? `月間 ${zumiATotalActs}件` : '済Aネタを入力'}</div>
         <div style="font-family:var(--fm);font-size:34px;font-weight:700;color:${hasZumiA?'#E65100':'var(--mu)'};line-height:1">${hasZumiA ? m2Weekly : '—'}</div>
-        <div style="font-size:11px;color:var(--mu);font-weight:700;margin-top:4px">件 / 週</div>
-        ${hasZumiA ? `<div style="font-size:10px;color:var(--mu);font-weight:800;margin-top:2px">約 ${m2Daily} 件 / 日</div>` : ''}
+        <div style="font-size:11px;color:var(--mu);font-weight:700;margin-top:6px">件 / 週</div>
+        <div style="font-size:10px;font-weight:800;margin-top:4px;min-height:14px;${hasZumiA?'color:var(--mu)':'visibility:hidden'}">${hasZumiA ? `約 ${m2Daily} 件 / 日` : '—'}</div>
       </div>
     </div>`;
 
