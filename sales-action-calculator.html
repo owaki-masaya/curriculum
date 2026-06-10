@@ -589,8 +589,7 @@ function setActionAdj(type, val) {
 }
 function setInNegType(type, val) {
   ST.inNegManual[type] = val === '' ? null : +val;
-  // calcBlockは再描画しない（入力中にリセットされないよう）
-  // 次回のyomi変更時の再描画でST値が反映される
+  if (ST.tab === 'yomi')   renderCalcBlock();
   if (ST.tab === 'result') renderResultTab();
   saveCurrentUser();
 }
@@ -735,31 +734,46 @@ function renderYomiCard() {
 // ── RENDER: CALC BLOCK (Tab 2) ──
 function renderCalcBlock() {
   const c = calcAll();
-  const { pr, net, sw, inNeg, inNegCalc, newMeetings, monthlyMeetings } = c;
+  const { pr, net, sw, inNeg, newMeetings, monthlyMeetings } = c;
 
+  // 目標・ヨミ・進行中いずれかのデータがあるタイプを表示
   const typeDefs = [
     { key:'pr',  label:'PR',  t:pr,  ratePct:nv(ST.goal.pr_rate),  pillCls:'pill-pr'  },
     { key:'net', label:'ネット予約', t:net, ratePct:nv(ST.goal.net_rate), pillCls:'pill-net' },
-    { key:'sw',  label:'切替', t:sw, ratePct:nv(ST.goal.sw_rate),  pillCls:'pill-sw'  },
-  ].filter(x => x.t.goalCnt > 0);
+    { key:'sw',  label:'切替', t:sw,  ratePct:nv(ST.goal.sw_rate),  pillCls:'pill-sw'  },
+  ].filter(x =>
+    x.t.goalCnt > 0 ||
+    Object.values(ST.yomi[x.key]).some(v => nv(v) > 0) ||
+    ST.inNegManual[x.key] !== null
+  );
 
   if (!typeDefs.length) { $('calcBlock').innerHTML = ''; return; }
 
+  const inNegMap = { pr: c.prInNeg, net: c.netInNeg, sw: c.swInNeg };
 
   const typeBlocks = typeDefs.map(({ key, label, t, ratePct, pillCls }) => {
+    const inNegVal  = ST.inNegManual[key];
+    const isManual  = inNegVal !== null;
+    const typeInNeg = inNegMap[key];
     const shortageOk = t.diff <= 0;
-    const inNegVal   = ST.inNegManual[key];
-    const isManual   = inNegVal !== null;
+    // 必要商談数（合計）: 不足 ÷ 受注率
+    const totalNeeded = t.goalCnt > 0 && ratePct > 0 ? cl(t.diff / t.rate) : 0;
+    // 未商談 = 必要商談数 − 進行中（進行中着地分を控除）
+    const effDiff   = Math.max(0, t.diff - typeInNeg * t.rate);
+    const misNeeded = t.rate > 0 ? cl(effDiff / t.rate) : (effDiff > 0 ? 999 : 0);
+    const typeTotal = typeInNeg + misNeeded;
+
     return `
       <div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;border:2px solid var(--bdr2)">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
           <span class="pill ${pillCls}">${label}</span>
-          <span style="font-size:11px;font-weight:800;color:var(--mu)">目標 ${t.goalCnt}件</span>
+          ${t.goalCnt > 0 ? `<span style="font-size:11px;font-weight:800;color:var(--mu)">目標 ${t.goalCnt}件</span>` : ''}
         </div>
         <div class="cb-row">
           <span class="cb-label">着地ヨミ（期待値）</span>
           <span class="cb-val">${f1(t.landing)} 件</span>
         </div>
+        ${t.goalCnt > 0 ? `
         <hr class="bk-hdiv">
         <div class="cb-row">
           <strong class="cb-label">不足分</strong>
@@ -767,14 +781,21 @@ function renderCalcBlock() {
         </div>
         ${!shortageOk && ratePct > 0 ? `
         <div class="cb-row" style="margin-top:4px">
-          <span style="font-size:11px;color:var(--mu);font-family:var(--fm)">不足${f1(t.diff)}件 ÷ 受注率${ratePct}%</span>
-          <span class="cb-meet-needed">= ${t.newOpps}件 必要（未商談）</span>
-        </div>` : ''}
-        <div class="f" style="margin-top:10px">
-          <label>進行中から何件商談いくか${isManual ? ' <span style="color:var(--wa)">(手打ち)</span>' : ''}</label>
-          <input type="number" placeholder="件数を入力" value="${isManual ? inNegVal : ''}"
-            oninput="setInNegType('${key}',this.value)" min="0">
+          <span style="font-size:11px;color:var(--mu);font-family:var(--fm)">÷ 受注率${ratePct}%</span>
+          <span class="cb-meet-needed">= ${totalNeeded}件 必要（商談合計）</span>
+        </div>` : ''}` : ''}
+        <hr class="bk-hdiv">
+        <div class="f" style="margin-top:8px">
+          <label>進行中 商談数${isManual ? ' <span style="color:var(--wa)">(手打ち)</span>' : ''}</label>
+          <input type="number" placeholder="0" value="${isManual ? inNegVal : ''}"
+            onchange="setInNegType('${key}',this.value)"
+            onkeydown="if(event.key==='Enter')setInNegType('${key}',this.value)" min="0">
         </div>
+        ${t.goalCnt > 0 && !shortageOk && ratePct > 0 ? `
+        <div style="background:#FFF3E0;border:1.5px solid #FFCC80;border-radius:8px;padding:7px 10px;margin-top:8px;font-size:12px;font-weight:900;color:#E65100;display:flex;justify-content:space-between;align-items:center">
+          <span style="color:var(--mu);font-weight:800">進行中 ${typeInNeg}件 ＋ 未商談 ${misNeeded}件</span>
+          <span style="font-family:var(--fm)">${typeTotal}件</span>
+        </div>` : ''}
       </div>`;
   }).join('');
 
@@ -782,14 +803,10 @@ function renderCalcBlock() {
     <div class="calc-blk">
       <div class="calc-blk-hd">進行中から逆算（タイプ別）</div>
       <div class="calc-blk-body">
-        <div class="cb-spotlight">
-          <span>進行中から何件商談行くか</span>
-          <strong>${inNeg} 件</strong>
-        </div>
         ${typeBlocks}
         <div class="cb-monthly">
           <div>
-            <div class="cb-monthly-lbl">月間 商談数</div>
+            <div class="cb-monthly-lbl">合計 行動数</div>
             <div class="cb-monthly-sub">進行中 ${inNeg} ＋ 未商談 ${newMeetings} 件</div>
           </div>
           <div class="cb-monthly-val">${monthlyMeetings} 件</div>
