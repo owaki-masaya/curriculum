@@ -634,10 +634,16 @@ function calcAll() {
   const inNegCalc = pr.inNeg + net.inNeg + sw.inNeg;
   const totalMis  = pr.mis + net.mis + sw.mis;
 
-  // 必要未商談 - 手打ちがあればそちらを使用（行動数の計算に反映）
-  const prNewMeet  = ST.misTarget.pr  !== '' ? nv(ST.misTarget.pr)  : pr.newOpps;
-  const netNewMeet = ST.misTarget.net !== '' ? nv(ST.misTarget.net) : net.newOpps;
-  const swNewMeet  = ST.misTarget.sw  !== '' ? nv(ST.misTarget.sw)  : sw.newOpps;
+  // 必要未商談 - 進行中商談の着地期待分を不足から控除してから算出
+  const prEffDiff  = Math.max(0, pr.diff  - prInNeg  * pr.rate);
+  const netEffDiff = Math.max(0, net.diff - netInNeg * net.rate);
+  const swEffDiff  = Math.max(0, sw.diff  - swInNeg  * sw.rate);
+  const prNeeded   = pr.rate  > 0 ? cl(prEffDiff  / pr.rate)  : (prEffDiff  > 0 ? 999 : 0);
+  const netNeeded  = net.rate > 0 ? cl(netEffDiff / net.rate) : (netEffDiff > 0 ? 999 : 0);
+  const swNeeded   = sw.rate  > 0 ? cl(swEffDiff  / sw.rate)  : (swEffDiff  > 0 ? 999 : 0);
+  const prNewMeet  = ST.misTarget.pr  !== '' ? nv(ST.misTarget.pr)  : prNeeded;
+  const netNewMeet = ST.misTarget.net !== '' ? nv(ST.misTarget.net) : netNeeded;
+  const swNewMeet  = ST.misTarget.sw  !== '' ? nv(ST.misTarget.sw)  : swNeeded;
   const newMeetings     = prNewMeet + netNewMeet + swNewMeet;
   const monthlyMeetings = inNeg + newMeetings;
 
@@ -805,12 +811,15 @@ function renderShortageCard(c) {
 
   const rows = types.map(({ key, label, t, pillCls }) => {
     const shortfall  = Math.max(0, t.goalCnt - t.landing);
-    const needed     = t.newOpps;
     const achieved   = t.landing >= t.goalCnt;
     const misCnt     = nv(ST.misTarget[key]);
     const adjCnt     = nv(ST.actionAdj[key]);
     const inNegVal   = ST.inNegManual[key];
     const inNegAuto  = t.inNeg;
+    // 進行中商談の着地期待分を不足から控除した上で必要商談数を算出
+    const typeInNeg     = inNegMap[key];
+    const effShortfall  = Math.max(0, shortfall - typeInNeg * t.rate);
+    const needed     = t.rate > 0 ? cl(effShortfall / t.rate) : (effShortfall > 0 ? 999 : 0);
     const extLand    = t.landing + misCnt * t.rate;
     const extPct     = t.goalCnt > 0 ? extLand / t.goalCnt * 100 : 0;
     const isOver     = extPct > 100;
@@ -823,7 +832,6 @@ function renderShortageCard(c) {
     const arpu       = key === 'pr' ? c.prArpu : key === 'sw' ? c.swArpu : 0;
     const landedFromMis = misCnt * t.rate;
     const misRev     = arpu > 0 && landedFromMis > 0 ? landedFromMis * arpu : 0;
-    const typeInNeg  = inNegMap[key];
     const typeTotal  = typeInNeg + misCnt + adjCnt;
 
     return `
@@ -840,6 +848,7 @@ function renderShortageCard(c) {
           ${!achieved ? `
             <span style="color:var(--mu)">→ 不足</span>
             <span style="color:var(--ng)"><span style="font-family:var(--fm);font-size:15px">${f1(shortfall)}</span>件</span>
+            ${typeInNeg > 0 ? `<span style="color:var(--mu)">− 進行中${typeInNeg}件×${(t.rate*100).toFixed(0)}%</span>` : ''}
             <span style="color:var(--mu)">÷ 受注率${(t.rate*100).toFixed(0)}%</span>
             <span style="color:var(--mu)">＝</span>
             <span style="background:var(--ng);color:#fff;border-radius:6px;padding:2px 8px"><span style="font-family:var(--fm);font-size:15px">${needed}</span>件の商談が必要</span>
