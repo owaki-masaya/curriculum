@@ -965,9 +965,9 @@ function renderM2Card(c) {
   const zumiAprActs  = zumiApr  > 0 && c.pr.rate  > 0 ? cl(zumiApr  / c.pr.rate)  : 0;
   const zumiAnetActs = zumiAnet > 0 && c.net.rate > 0 ? cl(zumiAnet / c.net.rate) : 0;
   const zumiATotalActs = zumiAprActs + zumiAnetActs;
-  const m2Total   = c.totalActions + zumiATotalActs;
-  const m2Weekly  = cl(m2Total / 4);
+  const m2Weekly  = cl(zumiATotalActs / 4);
   const m2Daily   = Math.ceil(m2Weekly / 5);
+  const m1Daily   = Math.ceil(c.weeklyActions / 5);
 
   const m2TargetHtml = hasM2Target ? `
     <div style="background:#F9F9F9;border:1.5px solid var(--bdr2);border-radius:10px;padding:10px 12px;margin-bottom:10px">
@@ -979,43 +979,41 @@ function renderM2Card(c) {
       </div>
     </div>` : '';
 
+  // 来月 vs 翌々月 行動数 2パネル（常に表示）
+  const compareHtml = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:${hasZumiA?'10':'0'}px">
+      <div style="background:#F0F4FF;border:2px solid #BFCFFF;border-radius:14px;padding:14px;text-align:center">
+        <div style="font-size:10px;font-weight:900;color:#1565C0;letter-spacing:.04em;margin-bottom:2px">来月掲載</div>
+        <div style="font-size:10px;color:var(--mu);font-weight:700;margin-bottom:6px">月間 ${c.totalActions}件</div>
+        <div style="font-family:var(--fm);font-size:34px;font-weight:700;color:#1565C0;line-height:1">${c.weeklyActions}</div>
+        <div style="font-size:11px;color:var(--mu);font-weight:700;margin-top:4px">件 / 週</div>
+        <div style="font-size:10px;color:var(--mu);font-weight:800;margin-top:2px">約 ${m1Daily} 件 / 日</div>
+      </div>
+      <div style="background:var(--yl);border:2px solid var(--yd);border-radius:14px;padding:14px;text-align:center">
+        <div style="font-size:10px;font-weight:900;color:#E65100;letter-spacing:.04em;margin-bottom:2px">翌々月掲載</div>
+        <div style="font-size:10px;color:var(--mu);font-weight:700;margin-bottom:6px">${hasZumiA ? `月間 ${zumiATotalActs}件（済A逆算）` : '済Aネタを入力'}</div>
+        <div style="font-family:var(--fm);font-size:34px;font-weight:700;color:${hasZumiA?'#E65100':'var(--mu)'};line-height:1">${hasZumiA ? m2Weekly : '—'}</div>
+        <div style="font-size:11px;color:var(--mu);font-weight:700;margin-top:4px">件 / 週</div>
+        ${hasZumiA ? `<div style="font-size:10px;color:var(--mu);font-weight:800;margin-top:2px">約 ${m2Daily} 件 / 日</div>` : ''}
+      </div>
+    </div>`;
+
   const zumiAHtml = hasZumiA ? `
-    <div style="margin-bottom:10px">
-      <div style="font-size:12px;font-weight:900;color:var(--tx);margin-bottom:6px">月末までに作る 済Aネタ → 必要商談数</div>
-      <div style="display:flex;flex-direction:column;gap:6px">
+    <div style="background:#FFF8EE;border:1.5px solid var(--yd);border-radius:10px;padding:10px 12px">
+      <div style="font-size:10px;font-weight:900;color:#7a4500;margin-bottom:6px">済Aネタ → 必要商談数 内訳</div>
+      <div style="display:flex;flex-direction:column;gap:5px">
         ${zumiApr > 0 ? `
-          <div style="display:flex;justify-content:space-between;align-items:center;background:#DBEAFE;border-radius:8px;padding:7px 10px">
-            <span style="font-size:12px;font-weight:900;color:var(--pr)">PR 済Aネタ <span style="font-family:var(--fm)">${zumiApr}</span>件</span>
-            <span style="font-size:12px;font-weight:900;color:var(--pr)">÷ 受注率${(c.pr.rate*100).toFixed(0)}% ＝ <span style="font-family:var(--fm);font-size:16px">${zumiAprActs}</span>商談</span>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:11px;font-weight:800;color:var(--pr)"><span class="pill pill-pr" style="font-size:9px;padding:2px 6px">PR</span> 済Aネタ ${zumiApr}件</span>
+            <span style="font-size:11px;font-weight:900;color:var(--pr)">÷${(c.pr.rate*100).toFixed(0)}% ＝ <span style="font-family:var(--fm);font-size:14px">${zumiAprActs}</span>商談</span>
           </div>` : ''}
         ${zumiAnet > 0 ? `
-          <div style="display:flex;justify-content:space-between;align-items:center;background:#CFFAFE;border-radius:8px;padding:7px 10px">
-            <span style="font-size:12px;font-weight:900;color:var(--net)">ネット予約 済Aネタ <span style="font-family:var(--fm)">${zumiAnet}</span>件</span>
-            <span style="font-size:12px;font-weight:900;color:var(--net)">÷ 受注率${(c.net.rate*100).toFixed(0)}% ＝ <span style="font-family:var(--fm);font-size:16px">${zumiAnetActs}</span>商談</span>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:11px;font-weight:800;color:var(--net)"><span class="pill pill-net" style="font-size:9px;padding:2px 6px">NET</span> 済Aネタ ${zumiAnet}件</span>
+            <span style="font-size:11px;font-weight:900;color:var(--net)">÷${(c.net.rate*100).toFixed(0)}% ＝ <span style="font-family:var(--fm);font-size:14px">${zumiAnetActs}</span>商談</span>
           </div>` : ''}
-        <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:900;color:var(--tx);padding:4px 2px">
-          <span>翌々月準備 追加商談合計</span>
-          <span style="font-family:var(--fm);font-size:15px;color:#E65100">+${zumiATotalActs}件</span>
-        </div>
-      </div>
-    </div>` : '';
-
-  const compareHtml = hasZumiA ? `
-    <div style="background:var(--yl);border:2px solid var(--yd);border-radius:14px;padding:14px">
-      <div style="font-size:10px;font-weight:900;color:#7a4500;letter-spacing:.06em;margin-bottom:10px;text-transform:uppercase">翌々月準備を加味した月間活動数</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div style="background:rgba(255,255,255,.6);border-radius:10px;padding:12px;text-align:center">
-          <div style="font-size:10px;font-weight:900;color:var(--mu);margin-bottom:2px">来月掲載のみ</div>
-          <div style="font-size:10px;color:var(--mu);font-weight:700;margin-bottom:6px">月間 ${c.totalActions}件</div>
-          <div style="font-family:var(--fm);font-size:34px;font-weight:700;color:#1a1a1a;line-height:1">${c.weeklyActions}</div>
-          <div style="font-size:11px;color:var(--mu);font-weight:700;margin-top:4px">件 / 週</div>
-        </div>
-        <div style="background:rgba(255,255,255,.9);border-radius:10px;padding:12px;text-align:center;border:2px solid var(--yd)">
-          <div style="font-size:10px;font-weight:900;color:#E65100;margin-bottom:2px">翌々月準備込み</div>
-          <div style="font-size:10px;color:var(--mu);font-weight:700;margin-bottom:6px">月間 ${m2Total}件（＋${zumiATotalActs}件）</div>
-          <div style="font-family:var(--fm);font-size:34px;font-weight:700;color:#E65100;line-height:1">${m2Weekly}</div>
-          <div style="font-size:11px;color:var(--mu);font-weight:700;margin-top:4px">件 / 週</div>
-          <div style="font-size:10px;color:var(--mu);font-weight:800;margin-top:2px">約 ${m2Daily} 件 / 日</div>
+        <div style="border-top:1px dashed var(--yd);margin-top:4px;padding-top:4px;display:flex;justify-content:space-between;font-size:11px;font-weight:900;color:#E65100">
+          <span>合計</span><span style="font-family:var(--fm)">${zumiATotalActs}件 ÷ 4週 ＝ ${m2Weekly}件/週</span>
         </div>
       </div>
     </div>` : '';
@@ -1023,7 +1021,7 @@ function renderM2Card(c) {
   return `
     <div class="card" style="margin-bottom:14px">
       <div class="card-ttl">翌々月 掲載準備</div>
-      ${m2TargetHtml}${zumiAHtml}${compareHtml}
+      ${m2TargetHtml}${compareHtml}${zumiAHtml}
     </div>`;
 }
 
