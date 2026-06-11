@@ -5,364 +5,389 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>費用対効果シミュレーター</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --purple:#7C3AED;--purple-d:#6D28D9;--purple-l:#F3EEFC;--purple-ll:#FAF7FE;
-  --blue:#2563EB;--blue-d:#1D4ED8;--blue-l:#EAF1FE;--blue-ll:#F6F9FF;
-  --green:#16A34A;--green-l:#DCFCE7;
-  --red:#DC2626;--red-l:#FEF2F2;
-  --orange:#D97706;--orange-l:#FFF7E8;
-  --tx:#1F2330;--mu:#8A8F9E;
-  --bdr:#ECEDF2;--bg:#F7F8FA;
-  --ff:'Noto Sans JP',sans-serif;
-  --sh:0 2px 14px rgba(30,35,60,.06);
+  /* ink & surface */
+  --ink:#16181D;--tx:#262A33;--mu:#6E7480;--mu2:#9AA0AC;
+  --line:#EBECF1;--line2:#E3E5EC;--bg:#F5F6F8;--card:#FFFFFF;
+  /* accents */
+  --v:#6E59E0;--vd:#5A45CC;--vl:#F2EFFD;--vll:#FAF8FF;
+  --b:#2C6BF0;--bd:#1F58D6;--bl:#EAF1FE;--bll:#F6F9FF;
+  --g:#16A35A;--gl:#E7F7EE;--r:#E14848;--rl:#FDEEEE;--o:#C77A12;--ol:#FBF2E2;
+  /* type */
+  --ff:'Noto Sans JP',-apple-system,BlinkMacSystemFont,sans-serif;
+  /* elevation */
+  --e1:0 1px 2px rgba(22,24,29,.04),0 2px 8px rgba(22,24,29,.04);
+  --e2:0 4px 16px rgba(22,24,29,.06),0 1px 3px rgba(22,24,29,.05);
+  --radius:16px;
 }
-body{background:var(--bg);font-family:var(--ff);color:var(--tx);-webkit-font-smoothing:antialiased;}
-.wrap{max-width:1120px;margin:0 auto;padding:32px 20px 72px;}
+html{-webkit-text-size-adjust:100%;}
+body{background:var(--bg);font-family:var(--ff);color:var(--tx);line-height:1.5;-webkit-font-smoothing:antialiased;letter-spacing:.01em;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;background:
+  radial-gradient(900px 420px at 12% -8%,rgba(110,89,224,.07),transparent 60%),
+  radial-gradient(900px 420px at 92% -4%,rgba(44,107,240,.06),transparent 60%);}
+.wrap{position:relative;max-width:1180px;margin:0 auto;padding:40px 24px 88px;}
 
-/* header */
-.hd{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
-.hd h1{font-size:clamp(20px,3.5vw,28px);font-weight:900;letter-spacing:-.01em;}
-.hd .note{font-size:11px;color:var(--mu);font-weight:500;font-style:italic;}
+/* ── header ── */
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:28px;}
+.brand{display:flex;align-items:center;gap:13px;}
+.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#7C5CFC,#5A45CC);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(110,89,224,.35);flex-shrink:0;}
+.logo svg{width:22px;height:22px;}
+.brand h1{font-size:21px;font-weight:900;letter-spacing:-.02em;color:var(--ink);line-height:1.25;}
+.brand p{font-size:12px;font-weight:600;color:var(--mu);margin-top:1px;}
+.tax{font-size:11px;color:var(--mu2);font-weight:500;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 12px;white-space:nowrap;box-shadow:var(--e1);}
 
-/* tabs */
-.tabs{display:flex;gap:24px;border-bottom:2px solid var(--bdr);margin-bottom:26px;flex-wrap:wrap;}
-.tab{background:none;border:none;font-family:var(--ff);font-size:14px;font-weight:700;color:var(--mu);padding:10px 2px 12px;cursor:pointer;position:relative;transition:color .15s;}
-.tab:hover{color:var(--tx);}
-.tab.on{color:var(--red);}
-.tab.on::after{content:'';position:absolute;left:0;right:0;bottom:-2px;height:3px;background:var(--red);border-radius:3px 3px 0 0;}
+/* ── tabs (segmented) ── */
+.seg{display:inline-flex;background:#ECEDF1;border-radius:14px;padding:5px;gap:4px;margin-bottom:28px;box-shadow:inset 0 1px 2px rgba(22,24,29,.05);}
+.seg button{position:relative;border:none;background:none;font-family:var(--ff);font-size:13.5px;font-weight:700;color:var(--mu);padding:10px 22px;border-radius:10px;cursor:pointer;transition:color .2s;display:flex;align-items:center;gap:9px;white-space:nowrap;}
+.seg button .dot{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.4;transition:opacity .2s;}
+.seg button.on{color:var(--ink);background:var(--card);box-shadow:var(--e1);}
+.seg button.on .dot{opacity:1;}
+.seg button[data-panel=panel1].on{color:var(--vd);}
+.seg button[data-panel=panel2].on{color:var(--bd);}
+@media(max-width:520px){.seg{display:flex;width:100%;}.seg button{flex:1;justify-content:center;padding:11px 8px;font-size:12.5px;}}
 
-/* layout */
-.cols{display:grid;grid-template-columns:340px 1fr;gap:22px;align-items:start;}
-@media(max-width:860px){.cols{grid-template-columns:1fr;}}
+/* ── layout ── */
+.cols{display:grid;grid-template-columns:352px 1fr;gap:22px;align-items:start;}
+@media(max-width:900px){.cols{grid-template-columns:1fr;}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--e1);}
+.side{padding:22px;position:sticky;top:24px;}
+@media(max-width:900px){.side{position:static;}}
+.main{padding:26px 28px;box-shadow:var(--e2);}
 
-/* cards */
-.card{background:#fff;border-radius:18px;box-shadow:var(--sh);padding:24px;}
-.input-card{border-left:5px solid var(--purple);}
-#panel2 .input-card{border-left-color:var(--blue);}
-.card h2{font-size:15px;font-weight:900;margin-bottom:18px;display:flex;align-items:center;gap:8px;}
-.card h2 .ic{font-size:16px;}
+.side-hd{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:800;color:var(--ink);padding-bottom:16px;margin-bottom:18px;border-bottom:1px solid var(--line);}
+.side-hd .badge{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+#panel1 .side-hd .badge{background:var(--vl);}
+#panel2 .side-hd .badge{background:var(--bl);}
+.side-hd .badge svg{width:15px;height:15px;}
 
-/* fields */
-.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
-.f label{display:block;font-size:11px;font-weight:700;color:var(--mu);margin-bottom:6px;}
-.f select{width:100%;border:1.5px solid var(--bdr);border-radius:10px;padding:10px 12px;font-family:var(--ff);font-size:14px;font-weight:700;color:var(--tx);background:#fff;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238A8F9E' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
-.f select:focus{border-color:var(--purple);}
-#panel2 .f select:focus{border-color:var(--blue);}
+/* ── form fields ── */
+.field{margin-bottom:16px;}
+.field>label{display:block;font-size:11px;font-weight:700;color:var(--mu);margin-bottom:7px;letter-spacing:.02em;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.sel{position:relative;}
+.sel::after{content:'';position:absolute;right:13px;top:50%;width:9px;height:9px;border-right:2px solid var(--mu2);border-bottom:2px solid var(--mu2);transform:translateY(-65%) rotate(45deg);pointer-events:none;border-radius:1px;}
+select{width:100%;border:1.5px solid var(--line2);border-radius:11px;padding:11px 34px 11px 13px;font-family:var(--ff);font-size:14px;font-weight:700;color:var(--tx);background:#FCFCFD;outline:none;cursor:pointer;appearance:none;transition:border-color .15s,box-shadow .15s,background .15s;}
+select:hover{border-color:#D2D5DE;}
+#panel1 select:focus{border-color:var(--v);background:#fff;box-shadow:0 0 0 3.5px rgba(110,89,224,.13);}
+#panel2 select:focus{border-color:var(--b);background:#fff;box-shadow:0 0 0 3.5px rgba(44,107,240,.13);}
 
-/* slider groups */
-.grp{border-radius:14px;padding:16px 16px 8px;margin-bottom:14px;}
-.grp-lunch{background:var(--purple-ll);border:1.5px solid var(--purple-l);}
-.grp-dinner{background:#F2F4FE;border:1.5px solid #E3E8FB;}
-#panel2 .grp-lunch{background:var(--blue-ll);border-color:var(--blue-l);}
-#panel2 .grp-dinner{background:var(--blue-ll);border-color:var(--blue-l);}
-.grp-ttl{font-size:12px;font-weight:900;text-align:center;color:var(--purple-d);margin-bottom:12px;letter-spacing:.04em;}
-.grp-dinner .grp-ttl{color:#4338CA;}
-#panel2 .grp-ttl{text-align:left;color:var(--blue-d);}
-.sl{margin-bottom:14px;}
-.sl-hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;}
+/* ── slider groups ── */
+.grp{border-radius:14px;padding:15px 16px 6px;margin-bottom:14px;border:1px solid;}
+.grp-l{background:var(--vll);border-color:#EDE8FC;}
+.grp-d{background:#F7F9FD;border-color:#E9EEF7;}
+#panel2 .grp-l,#panel2 .grp-d{background:var(--bll);border-color:#E5EDFB;}
+.grp-ttl{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:900;letter-spacing:.06em;margin-bottom:14px;color:var(--vd);}
+.grp-d .grp-ttl{color:var(--bd);}
+#panel2 .grp-ttl{color:var(--bd);}
+.grp-ttl .tg{font-size:9px;font-weight:800;letter-spacing:.04em;padding:2px 8px;border-radius:6px;background:#fff;border:1px solid var(--line2);color:var(--mu);}
+
+.sl{margin-bottom:15px;}
+.sl-hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;}
 .sl-hd label{font-size:11px;font-weight:700;color:var(--mu);}
-.sl-hd output{font-size:12px;font-weight:900;color:var(--purple-d);font-variant-numeric:tabular-nums;}
-.grp-dinner .sl-hd output{color:#4338CA;}
-#panel2 .sl-hd output{color:var(--blue-d);}
-.sl-pair{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-input[type=range]{width:100%;height:6px;-webkit-appearance:none;appearance:none;background:#E2E4EC;border-radius:6px;outline:none;cursor:pointer;}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#8B5CF6;border:3px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.25);cursor:grab;}
-input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#8B5CF6;border:3px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.25);cursor:grab;}
-#panel2 input[type=range]::-webkit-slider-thumb{background:#3B82F6;}
-#panel2 input[type=range]::-moz-range-thumb{background:#3B82F6;}
+.sl-hd output{font-size:13px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--vd);letter-spacing:-.01em;}
+.grp-d .sl-hd output{color:var(--bd);}
+#panel2 .sl-hd output{color:var(--bd);}
+.sl-pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:6px;outline:none;cursor:pointer;background:linear-gradient(to right,var(--acc) 0 var(--p,50%),#E3E5EC var(--p,50%) 100%);transition:background .05s linear;}
+#panel1{--acc:#7C5CFC;}#panel2{--acc:#3B82F6;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:none;box-shadow:0 0 0 2px var(--acc) inset,0 2px 6px rgba(22,24,29,.22);cursor:grab;transition:transform .12s;}
+input[type=range]::-webkit-slider-thumb:active{cursor:grabbing;transform:scale(1.12);}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--acc);box-shadow:0 2px 6px rgba(22,24,29,.22);cursor:grab;}
+input[type=range]:focus-visible{box-shadow:0 0 0 4px rgba(110,89,224,.18);}
 
-/* result cards */
-.res-ttl{font-size:17px;font-weight:900;margin-bottom:18px;}
-.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px;}
-@media(max-width:560px){.kpis{grid-template-columns:1fr;}}
-.kpi{border-radius:14px;padding:18px 12px;text-align:center;background:var(--bg);border:1.5px solid var(--bdr);}
-.kpi .k-label{font-size:12px;font-weight:700;color:var(--mu);margin-bottom:8px;}
-.kpi .k-val{font-size:clamp(18px,2.2vw,22px);font-weight:900;color:var(--purple-d);font-variant-numeric:tabular-nums;letter-spacing:-.01em;}
-.kpi .k-sub{font-size:10px;color:var(--mu);margin-top:6px;font-weight:500;}
-.kpi.hero{background:var(--purple);border-color:var(--purple);}
-.kpi.hero .k-label,.kpi.hero .k-sub{color:rgba(255,255,255,.85);}
-.kpi.hero .k-val{color:#fff;font-size:clamp(20px,2.5vw,24px);}
-.kpi.cost-strike .k-val{color:var(--mu);text-decoration:line-through;font-weight:700;}
-.kpi.cost-red{background:var(--red-l);border-color:#FAD7D7;}
-.kpi.cost-red .k-val{color:var(--red);}
-.kpi.hero-blue{background:var(--blue);border-color:var(--blue);}
-.kpi.hero-blue .k-label,.kpi.hero-blue .k-sub{color:rgba(255,255,255,.85);}
-.kpi.hero-blue .k-val{color:#fff;font-size:clamp(20px,2.5vw,24px);}
+/* ── results ── */
+.res-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px;flex-wrap:wrap;}
+.res-hd h2{font-size:18px;font-weight:900;letter-spacing:-.02em;color:var(--ink);}
+.res-hd .sub{font-size:11.5px;color:var(--mu);font-weight:600;}
 
-/* current vs max bar */
-.bar-row{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
-.bar-row .b-label{font-size:11px;font-weight:700;color:var(--mu);width:34px;flex-shrink:0;}
-.bar-track{flex:1;height:16px;background:#EDEEF3;border-radius:10px;overflow:hidden;}
-.bar-fill{height:100%;background:#C9CDD9;border-radius:10px;transition:width .35s ease;}
-.bar-row .b-val{font-size:11px;font-weight:700;color:var(--mu);white-space:nowrap;font-variant-numeric:tabular-nums;}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:24px;}
+@media(max-width:600px){.kpis{grid-template-columns:1fr;}}
+.kpi{border:1px solid var(--line);border-radius:14px;padding:17px 16px;background:#FCFCFD;transition:transform .15s,box-shadow .15s;}
+.kpi:hover{transform:translateY(-2px);box-shadow:var(--e2);}
+.kpi .kl{font-size:11px;font-weight:700;color:var(--mu);margin-bottom:9px;display:flex;align-items:center;gap:6px;}
+.kpi .kl .d{width:6px;height:6px;border-radius:50%;}
+.kpi .kv{font-size:23px;font-weight:900;letter-spacing:-.025em;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.1;}
+.kpi .ks{font-size:10.5px;color:var(--mu2);margin-top:7px;font-weight:600;}
+.kpi.hero{border:none;color:#fff;}
+#panel1 .kpi.hero{background:linear-gradient(135deg,#7C5CFC,#5A45CC);box-shadow:0 10px 26px rgba(90,69,204,.34);}
+#panel2 .kpi.hero{background:linear-gradient(135deg,#3B82F6,#1F58D6);box-shadow:0 10px 26px rgba(31,88,214,.32);}
+.kpi.hero .kl,.kpi.hero .ks{color:rgba(255,255,255,.82);}
+.kpi.hero .kv{color:#fff;font-size:25px;}
+.kpi.hero:hover{transform:translateY(-2px);}
+.kpi.danger{background:var(--rl);border-color:#F6D9D9;}
+.kpi.danger .kv{color:var(--r);}
 
-.summary{background:var(--purple-ll);border:1.5px solid var(--purple-l);border-radius:14px;padding:18px 20px;font-size:14px;font-weight:700;line-height:1.9;}
-.summary strong{color:var(--purple-d);font-size:17px;font-weight:900;}
-.summary u{text-decoration-color:var(--purple-d);text-underline-offset:3px;}
+/* progress bar (panel1) */
+.prog{margin-bottom:22px;}
+.prog-lg{display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:var(--mu);margin-bottom:8px;}
+.prog-lg b{color:var(--vd);font-weight:800;}
+.bar{height:30px;background:#EEF0F4;border-radius:9px;overflow:hidden;position:relative;display:flex;}
+.bar .now{height:100%;background:linear-gradient(90deg,#9C8BF0,#7C5CFC);border-radius:9px 0 0 9px;transition:width .5s cubic-bezier(.4,0,.2,1);min-width:3px;}
+.bar .gap{height:100%;flex:1;background:repeating-linear-gradient(45deg,#F4F2FD,#F4F2FD 7px,#EAE6FB 7px,#EAE6FB 14px);}
+.bar-tags{display:flex;justify-content:space-between;margin-top:7px;font-size:10.5px;font-weight:700;}
+.bar-tags .t-now{color:var(--vd);}.bar-tags .t-max{color:var(--mu);}
 
-/* tab2 rows */
-.line{display:flex;justify-content:space-between;align-items:baseline;padding:13px 2px;border-bottom:1.5px solid var(--bdr);}
-.line .l-label{font-size:13px;font-weight:700;color:var(--tx);}
-.line .l-sub{font-size:10px;color:var(--mu);font-weight:500;margin-top:2px;}
-.line .l-val{font-size:18px;font-weight:900;font-variant-numeric:tabular-nums;}
-.l-val.green{color:var(--green);}
-.cost-bk{font-size:11px;color:var(--mu);font-weight:500;margin-top:3px;}
+.summary{border-radius:13px;padding:17px 19px;font-size:13.5px;font-weight:600;line-height:1.85;border:1px solid;}
+#panel1 .summary{background:var(--vll);border-color:#EDE8FC;color:var(--tx);}
+.summary strong{color:var(--vd);font-weight:900;}
+.summary .big{font-size:18px;}
 
-.merit{background:var(--orange-l);border:1.5px solid #F8E6C4;border-radius:14px;padding:16px 18px;display:flex;justify-content:space-between;gap:14px;margin:18px 0 22px;flex-wrap:wrap;}
-.merit .m-cell{flex:1;min-width:120px;}
-.merit .m-label{font-size:11px;font-weight:700;color:var(--orange);margin-bottom:4px;}
-.merit .m-val{font-size:20px;font-weight:900;font-variant-numeric:tabular-nums;}
-.merit .m-val.ng{color:var(--red);}
+/* panel2 lines */
+.lines{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:18px;}
+.line{display:flex;justify-content:space-between;align-items:center;padding:15px 18px;background:#fff;}
+.line+.line{border-top:1px solid var(--line);}
+.line .ll{font-size:13px;font-weight:700;color:var(--tx);}
+.line .ls{font-size:10.5px;color:var(--mu2);font-weight:600;margin-top:2px;}
+.line .lv{font-size:19px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:var(--ink);}
+.line .lv.g{color:var(--g);}
+
+.merit{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--ol);border:1px solid #F2E3C4;border-radius:14px;overflow:hidden;margin-bottom:22px;}
+.merit .mc{background:linear-gradient(180deg,#FFFCF5,#FDF6E8);padding:16px 18px;}
+.merit .ml{font-size:11px;font-weight:800;color:var(--o);margin-bottom:5px;}
+.merit .mv{font-size:21px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:#9A5D08;}
+.merit .mv.ng{color:var(--r);}
 
 /* chart */
-.chart{display:flex;gap:10px;margin-top:8px;}
-.chart-y{display:flex;flex-direction:column;justify-content:space-between;font-size:10px;color:var(--mu);font-weight:500;text-align:right;font-variant-numeric:tabular-nums;flex-shrink:0;padding-bottom:22px;}
+.chart-wrap{border:1px solid var(--line);border-radius:14px;padding:18px 18px 14px;margin-bottom:24px;background:#FCFCFD;}
+.chart-wrap .ct{font-size:11px;font-weight:800;color:var(--mu);margin-bottom:14px;letter-spacing:.02em;}
+.chart{display:flex;gap:12px;height:184px;}
+.chart-y{display:flex;flex-direction:column;justify-content:space-between;font-size:10px;color:var(--mu2);font-weight:600;text-align:right;font-variant-numeric:tabular-nums;flex-shrink:0;padding-bottom:24px;}
 .chart-area{flex:1;position:relative;}
-.chart-grid{position:absolute;inset:0 0 22px;display:flex;flex-direction:column;justify-content:space-between;}
-.chart-grid i{display:block;border-top:1px solid var(--bdr);}
-.chart-bars{position:absolute;inset:0 0 22px;display:flex;justify-content:space-around;align-items:flex-end;}
-.cbar{width:64px;border-radius:6px 6px 0 0;transition:height .35s ease;min-height:3px;}
-.cbar.sales{background:#10B981;}
-.cbar.cost{background:#F87171;}
+.chart-grid{position:absolute;inset:0 0 24px;display:flex;flex-direction:column;justify-content:space-between;}
+.chart-grid i{border-top:1px dashed var(--line2);}
+.chart-grid i:last-child{border-top:1.5px solid var(--line2);}
+.chart-bars{position:absolute;inset:0 0 24px;display:flex;justify-content:space-around;align-items:flex-end;}
+.colwrap{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;width:78px;}
+.colwrap .cval{font-size:11px;font-weight:900;font-variant-numeric:tabular-nums;margin-bottom:6px;color:var(--ink);}
+.cbar{width:100%;border-radius:7px 7px 0 0;transition:height .5s cubic-bezier(.4,0,.2,1);min-height:4px;}
+.cbar.s{background:linear-gradient(180deg,#34D399,#10B981);}
+.cbar.c{background:linear-gradient(180deg,#FB7185,#F43F5E);}
 .chart-x{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-around;font-size:11px;font-weight:700;color:var(--mu);}
 
-/* plan compare table */
-.cmp{width:100%;border-collapse:collapse;margin-top:22px;font-size:12px;}
-.cmp th{font-size:11px;font-weight:700;color:var(--mu);text-align:right;padding:8px 10px;border-bottom:1.5px solid var(--bdr);white-space:nowrap;}
+/* compare table */
+.cmp-hd{font-size:13px;font-weight:800;color:var(--ink);margin-bottom:12px;}
+.cmp{width:100%;border-collapse:separate;border-spacing:0;font-size:12.5px;border:1px solid var(--line);border-radius:13px;overflow:hidden;}
+.cmp th{font-size:10.5px;font-weight:700;color:var(--mu);text-align:right;padding:11px 14px;background:#FAFAFC;border-bottom:1px solid var(--line);white-space:nowrap;}
 .cmp th:first-child{text-align:left;}
-.cmp td{padding:10px;text-align:right;border-bottom:1px solid var(--bdr);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;}
-.cmp td:first-child{text-align:left;}
-.cmp tr.sel td{background:var(--blue-ll);}
-.cmp tr.sel td:first-child{color:var(--blue-d);}
-.cmp .roi{color:var(--blue-d);font-weight:900;}
-.cmp-note{font-size:10px;color:var(--mu);margin-top:8px;font-weight:500;}
+.cmp td{padding:13px 14px;text-align:right;border-bottom:1px solid var(--line);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--tx);}
+.cmp tr:last-child td{border-bottom:none;}
+.cmp td:first-child{text-align:left;font-weight:800;}
+.cmp tr.sel td{background:var(--bll);}
+.cmp tr.sel td:first-child{color:var(--bd);}
+.cmp .pname{display:flex;align-items:center;gap:8px;}
+.cmp .chk{width:16px;height:16px;border-radius:50%;background:var(--b);display:none;align-items:center;justify-content:center;flex-shrink:0;}
+.cmp tr.sel .chk{display:inline-flex;}
+.cmp .chk svg{width:9px;height:9px;}
+.cmp .roi{font-weight:900;color:var(--bd);}
+.cmp .best{font-size:9px;font-weight:800;color:var(--g);background:var(--gl);border-radius:5px;padding:2px 6px;margin-left:6px;letter-spacing:.03em;}
+.cmp-note{font-size:10.5px;color:var(--mu2);margin-top:11px;font-weight:500;line-height:1.7;}
 
-footer{margin-top:48px;text-align:center;font-size:11px;color:var(--mu);font-weight:500;}
+footer{margin-top:52px;text-align:center;font-size:11px;color:var(--mu2);font-weight:500;}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <div class="hd">
-    <h1>費用対効果シミュレーター</h1>
-    <div class="note">※本資料に記載の金額はすべて税別です</div>
+  <header class="top">
+    <div class="brand">
+      <span class="logo"><svg viewBox="0 0 24 24" fill="none"><path d="M4 19V9m5 10V5m5 14v-7m5 7V8" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+      <div>
+        <h1>費用対効果シミュレーター</h1>
+        <p>機会損失の可視化と投資対効果（ROI）の試算</p>
+      </div>
+    </div>
+    <div class="tax">※本資料に記載の金額はすべて税別です</div>
+  </header>
+
+  <div class="seg">
+    <button class="on" data-panel="panel1"><span class="dot"></span>① 売上見込み（機会損失）</button>
+    <button data-panel="panel2"><span class="dot"></span>② 費用対効果（ROI）</button>
   </div>
 
-  <div class="tabs">
-    <button class="tab on" data-panel="panel1">① 売上見込み（機会損失）</button>
-    <button class="tab" data-panel="panel2">② 費用対効果（ROI）</button>
-  </div>
-
-  <!-- ===================== ① 機会損失シミュレーション ===================== -->
+  <!-- ===================== ① 機会損失 ===================== -->
   <section id="panel1" class="cols">
-    <div class="card input-card">
-      <h2><span class="ic">📊</span>詳細稼働条件</h2>
+    <aside class="card side">
+      <div class="side-hd">
+        <span class="badge"><svg viewBox="0 0 24 24" fill="none"><path d="M4 19h16M7 16V9m5 7V5m5 11v-4" stroke="#6E59E0" stroke-width="2.2" stroke-linecap="round"/></svg></span>
+        詳細稼働条件
+      </div>
 
-      <div class="frow">
-        <div class="f">
-          <label>総席数</label>
-          <select id="seats"></select>
-        </div>
-        <div class="f">
-          <label>営業日数/月</label>
-          <select id="days"></select>
+      <div class="field">
+        <div class="frow">
+          <div><label>総席数</label><div class="sel"><select id="seats"></select></div></div>
+          <div><label>営業日数 / 月</label><div class="sel"><select id="days"></select></div></div>
         </div>
       </div>
 
-      <div class="grp grp-lunch">
-        <div class="grp-ttl">昼（LUNCH）</div>
+      <div class="grp grp-l">
+        <div class="grp-ttl">昼の営業<span class="tg">LUNCH</span></div>
         <div class="sl">
           <div class="sl-hd"><label>想定客単価</label><output id="o-lPrice"></output></div>
           <input type="range" id="lPrice" min="500" max="3000" step="100" value="1500">
         </div>
         <div class="sl-pair">
-          <div class="sl">
-            <div class="sl-hd"><label>現状回転</label><output id="o-lTurnNow"></output></div>
-            <input type="range" id="lTurnNow" min="0.2" max="3" step="0.1" value="1.0">
-          </div>
-          <div class="sl">
-            <div class="sl-hd"><label>現状卓率</label><output id="o-lOccNow"></output></div>
-            <input type="range" id="lOccNow" min="10" max="100" step="5" value="50">
-          </div>
+          <div class="sl"><div class="sl-hd"><label>現状 回転数</label><output id="o-lTurnNow"></output></div><input type="range" id="lTurnNow" min="0.2" max="3" step="0.1" value="1.0"></div>
+          <div class="sl"><div class="sl-hd"><label>現状 卓稼働</label><output id="o-lOccNow"></output></div><input type="range" id="lOccNow" min="10" max="100" step="5" value="50"></div>
         </div>
         <div class="sl-pair">
-          <div class="sl">
-            <div class="sl-hd"><label>最大回転</label><output id="o-lTurnMax"></output></div>
-            <input type="range" id="lTurnMax" min="0.2" max="3" step="0.1" value="1.2">
-          </div>
-          <div class="sl">
-            <div class="sl-hd"><label>最大卓率</label><output id="o-lOccMax"></output></div>
-            <input type="range" id="lOccMax" min="10" max="100" step="5" value="90">
-          </div>
+          <div class="sl"><div class="sl-hd"><label>最大 回転数</label><output id="o-lTurnMax"></output></div><input type="range" id="lTurnMax" min="0.2" max="3" step="0.1" value="1.2"></div>
+          <div class="sl"><div class="sl-hd"><label>最大 卓稼働</label><output id="o-lOccMax"></output></div><input type="range" id="lOccMax" min="10" max="100" step="5" value="90"></div>
         </div>
       </div>
 
-      <div class="grp grp-dinner">
-        <div class="grp-ttl">夜（DINNER）</div>
+      <div class="grp grp-d">
+        <div class="grp-ttl">夜の営業<span class="tg">DINNER</span></div>
         <div class="sl">
-          <div class="sl-hd"><label>客単価</label><output id="o-dPrice"></output></div>
+          <div class="sl-hd"><label>想定客単価</label><output id="o-dPrice"></output></div>
           <input type="range" id="dPrice" min="1000" max="15000" step="250" value="5000">
         </div>
         <div class="sl-pair">
-          <div class="sl">
-            <div class="sl-hd"><label>現状回転</label><output id="o-dTurnNow"></output></div>
-            <input type="range" id="dTurnNow" min="0.2" max="3" step="0.1" value="0.8">
-          </div>
-          <div class="sl">
-            <div class="sl-hd"><label>現状卓率</label><output id="o-dOccNow"></output></div>
-            <input type="range" id="dOccNow" min="10" max="100" step="5" value="60">
-          </div>
+          <div class="sl"><div class="sl-hd"><label>現状 回転数</label><output id="o-dTurnNow"></output></div><input type="range" id="dTurnNow" min="0.2" max="3" step="0.1" value="0.8"></div>
+          <div class="sl"><div class="sl-hd"><label>現状 卓稼働</label><output id="o-dOccNow"></output></div><input type="range" id="dOccNow" min="10" max="100" step="5" value="60"></div>
         </div>
         <div class="sl-pair">
-          <div class="sl">
-            <div class="sl-hd"><label>最大回転</label><output id="o-dTurnMax"></output></div>
-            <input type="range" id="dTurnMax" min="0.2" max="3" step="0.1" value="1.5">
-          </div>
-          <div class="sl">
-            <div class="sl-hd"><label>最大卓率</label><output id="o-dOccMax"></output></div>
-            <input type="range" id="dOccMax" min="10" max="100" step="5" value="95">
-          </div>
+          <div class="sl"><div class="sl-hd"><label>最大 回転数</label><output id="o-dTurnMax"></output></div><input type="range" id="dTurnMax" min="0.2" max="3" step="0.1" value="1.5"></div>
+          <div class="sl"><div class="sl-hd"><label>最大 卓稼働</label><output id="o-dOccMax"></output></div><input type="range" id="dOccMax" min="10" max="100" step="5" value="95"></div>
         </div>
       </div>
-    </div>
+    </aside>
 
-    <div class="card">
-      <div class="res-ttl">売上「機会損失」ポテンシャル</div>
+    <div class="card main">
+      <div class="res-hd">
+        <h2>売上「機会損失」ポテンシャル</h2>
+        <div class="sub">現状稼働 vs 集客最大化</div>
+      </div>
 
       <div class="kpis">
         <div class="kpi">
-          <div class="k-label">昼の余白</div>
-          <div class="k-val" id="r-lunchGap"></div>
-          <div class="k-sub" id="r-lunchGapN"></div>
+          <div class="kl"><span class="d" style="background:var(--v)"></span>昼の余白</div>
+          <div class="kv" id="r-lunchGap"></div>
+          <div class="ks" id="r-lunchGapN"></div>
         </div>
         <div class="kpi">
-          <div class="k-label">夜の余白</div>
-          <div class="k-val" id="r-dinnerGap"></div>
-          <div class="k-sub" id="r-dinnerGapN"></div>
+          <div class="kl"><span class="d" style="background:var(--b)"></span>夜の余白</div>
+          <div class="kv" id="r-dinnerGap"></div>
+          <div class="ks" id="r-dinnerGapN"></div>
         </div>
         <div class="kpi hero">
-          <div class="k-label">月間総余白</div>
-          <div class="k-val" id="r-totalGap"></div>
-          <div class="k-sub" id="r-totalGapN"></div>
+          <div class="kl">月間 総機会損失</div>
+          <div class="kv" id="r-totalGap"></div>
+          <div class="ks" id="r-totalGapN"></div>
         </div>
       </div>
 
-      <div class="bar-row">
-        <div class="b-label">現状</div>
-        <div class="bar-track"><div class="bar-fill" id="r-bar"></div></div>
-        <div class="b-val" id="r-nowSales"></div>
+      <div class="prog">
+        <div class="prog-lg"><span>売上の到達状況</span><span>最大化売上 <b id="r-maxSales"></b></span></div>
+        <div class="bar"><div class="now" id="r-bar"></div><div class="gap"></div></div>
+        <div class="bar-tags"><span class="t-now">現状 <span id="r-nowSales"></span></span><span class="t-max" id="r-rate"></span></div>
       </div>
 
       <div class="summary" id="r-summary"></div>
     </div>
   </section>
 
-  <!-- ===================== ② 費用対効果シミュレーション ===================== -->
+  <!-- ===================== ② 費用対効果 ===================== -->
   <section id="panel2" class="cols" style="display:none">
-    <div class="card input-card">
-      <h2><span class="ic">📈</span>シミュレーション条件</h2>
-
-      <div class="f" style="margin-bottom:16px">
-        <label>検討PRプラン</label>
-        <select id="plan">
-          <option value="10000">ライトプラン（月額1万）</option>
-          <option value="25000" selected>ベーシックプラン（月額2.5万）</option>
-          <option value="50000">スタンダードプラン（月額5万）</option>
-          <option value="100000">プレミアムプラン（月額10万）</option>
-        </select>
+    <aside class="card side">
+      <div class="side-hd">
+        <span class="badge"><svg viewBox="0 0 24 24" fill="none"><path d="M4 16l5-5 4 4 7-8" stroke="#2C6BF0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 7h4v4" stroke="#2C6BF0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        シミュレーション条件
       </div>
 
-      <div class="grp grp-lunch">
-        <div class="grp-ttl">昼（LUNCH）</div>
+      <div class="field">
+        <label>検討するPRプラン</label>
+        <div class="sel"><select id="plan">
+          <option value="10000">ライト（月額1万）</option>
+          <option value="25000" selected>ベーシック（月額2.5万）</option>
+          <option value="50000">プレミアム5（月額5万）</option>
+          <option value="100000">プレミアム10（月額10万）</option>
+        </select></div>
+      </div>
+
+      <div class="grp grp-l">
+        <div class="grp-ttl">昼の予約<span class="tg">LUNCH</span></div>
         <div class="sl">
           <div class="sl-hd"><label>ランチ客単価</label><output id="o-rLPrice"></output></div>
           <input type="range" id="rLPrice" min="500" max="3000" step="100" value="1500">
         </div>
-        <div class="f">
-          <label>ランチ予約人数</label>
-          <select id="rLNum"></select>
-        </div>
+        <div class="field" style="margin-bottom:6px"><label>月間ランチ予約人数</label><div class="sel"><select id="rLNum"></select></div></div>
       </div>
 
-      <div class="grp grp-dinner">
-        <div class="grp-ttl">夜（DINNER）</div>
+      <div class="grp grp-d">
+        <div class="grp-ttl">夜の予約<span class="tg">DINNER</span></div>
         <div class="sl">
           <div class="sl-hd"><label>ディナー客単価</label><output id="o-rDPrice"></output></div>
           <input type="range" id="rDPrice" min="1000" max="15000" step="250" value="5000">
         </div>
-        <div class="f">
-          <label>ディナー予約人数</label>
-          <select id="rDNum"></select>
-        </div>
+        <div class="field" style="margin-bottom:6px"><label>月間ディナー予約人数</label><div class="sel"><select id="rDNum"></select></div></div>
       </div>
-    </div>
+    </aside>
 
-    <div class="card">
-      <div class="res-ttl">投資対効果シミュレーション</div>
+    <div class="card main">
+      <div class="res-hd">
+        <h2>投資対効果シミュレーション</h2>
+        <div class="sub">運用コスト＝月額 ＋ 200円/予約</div>
+      </div>
 
       <div class="kpis">
-        <div class="kpi cost-red">
-          <div class="k-label">月間運用コスト</div>
-          <div class="k-val" id="c-cost"></div>
-          <div class="k-sub" id="c-costBk"></div>
+        <div class="kpi danger">
+          <div class="kl">月間 運用コスト</div>
+          <div class="kv" id="c-cost"></div>
+          <div class="ks" id="c-costBk"></div>
         </div>
         <div class="kpi">
-          <div class="k-label">月間純メリット</div>
-          <div class="k-val" id="c-net" style="color:var(--green)"></div>
-          <div class="k-sub">推定売上 − 運用コスト</div>
+          <div class="kl"><span class="d" style="background:var(--g)"></span>月間 純利益効果</div>
+          <div class="kv" id="c-net" style="color:var(--g)"></div>
+          <div class="ks">推定売上 − 運用コスト</div>
         </div>
-        <div class="kpi hero-blue">
-          <div class="k-label">投資対効果（ROI）</div>
-          <div class="k-val" id="c-roi"></div>
-          <div class="k-sub">推定売上 ÷ 運用コスト</div>
+        <div class="kpi hero">
+          <div class="kl">投資対効果（ROI）</div>
+          <div class="kv" id="c-roi"></div>
+          <div class="ks">推定売上 ÷ 運用コスト</div>
         </div>
       </div>
 
-      <div class="line">
-        <div>
-          <div class="l-label">推定月間来店人数</div>
-          <div class="l-sub" id="c-numBk"></div>
+      <div class="lines">
+        <div class="line">
+          <div><div class="ll">推定 月間来店人数</div><div class="ls" id="c-numBk"></div></div>
+          <div class="lv" id="c-num"></div>
         </div>
-        <div class="l-val" id="c-num"></div>
-      </div>
-      <div class="line" style="border-bottom:none">
-        <div class="l-label">推定月間売上高</div>
-        <div class="l-val green" id="c-sales"></div>
+        <div class="line">
+          <div class="ll">推定 月間売上高</div>
+          <div class="lv g" id="c-sales"></div>
+        </div>
       </div>
 
       <div class="merit">
-        <div class="m-cell">
-          <div class="m-label">月額メリット</div>
-          <div class="m-val" id="c-merit"></div>
-        </div>
-        <div class="m-cell" style="text-align:right">
-          <div class="m-label">半年累計メリット</div>
-          <div class="m-val" id="c-merit6"></div>
-        </div>
+        <div class="mc"><div class="ml">月間メリット</div><div class="mv" id="c-merit"></div></div>
+        <div class="mc" style="text-align:right"><div class="ml">半年累計メリット</div><div class="mv" id="c-merit6"></div></div>
       </div>
 
-      <div class="chart" style="height:220px">
-        <div class="chart-y" id="ch-y"></div>
-        <div class="chart-area">
-          <div class="chart-grid"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-          <div class="chart-bars">
-            <div class="cbar sales" id="ch-sales"></div>
-            <div class="cbar cost" id="ch-cost"></div>
+      <div class="chart-wrap">
+        <div class="ct">推定売上高 と 運用コストの比較</div>
+        <div class="chart">
+          <div class="chart-y" id="ch-y"></div>
+          <div class="chart-area">
+            <div class="chart-grid"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="chart-bars">
+              <div class="colwrap"><span class="cval" id="ch-sv"></span><div class="cbar s" id="ch-sales"></div></div>
+              <div class="colwrap"><span class="cval" id="ch-cv"></span><div class="cbar c" id="ch-cost"></div></div>
+            </div>
+            <div class="chart-x"><span>推定売上高</span><span>運用コスト</span></div>
           </div>
-          <div class="chart-x"><span>推定売上高</span><span>運用コスト</span></div>
         </div>
       </div>
 
+      <div class="cmp-hd">プラン別 投資対効果の比較</div>
       <table class="cmp">
-        <thead>
-          <tr><th>プラン比較</th><th>月額固定費</th><th>従量（200円/名）</th><th>運用コスト</th><th>ROI</th></tr>
-        </thead>
+        <thead><tr><th>プラン</th><th>月額固定</th><th>従量(200円/名)</th><th>運用コスト</th><th>ROI</th></tr></thead>
         <tbody id="cmp-body"></tbody>
       </table>
-      <div class="cmp-note">※ 運用コスト＝プラン月額＋予約1名あたり200円。売上見込みは同一条件（上記の予約人数・客単価）で比較しています。</div>
+      <div class="cmp-note">※ 運用コスト＝プラン月額 ＋ 予約1名あたり200円。全プランとも同一の予約人数・客単価で比較しています。</div>
     </div>
   </section>
 
@@ -372,13 +397,12 @@ footer{margin-top:48px;text-align:center;font-size:11px;color:var(--mu);font-wei
 <script>
 const $ = id => document.getElementById(id);
 const yen = n => '¥' + Math.round(n).toLocaleString('ja-JP');
+const man = n => '¥' + (Math.round(n/1000)/10).toLocaleString('ja-JP') + '万';
 
-/* ---------- select options ---------- */
 function fillSelect(el, from, to, step, unit, selected){
   for(let v = from; v <= to; v += step){
     const o = document.createElement('option');
-    o.value = v;
-    o.textContent = v + ' ' + unit;
+    o.value = v; o.textContent = v + ' ' + unit;
     if(v === selected) o.selected = true;
     el.appendChild(o);
   }
@@ -388,17 +412,23 @@ fillSelect($('days'), 15, 31, 1, '日', 25);
 fillSelect($('rLNum'), 0, 500, 10, '名', 50);
 fillSelect($('rDNum'), 0, 500, 10, '名', 100);
 
-/* ---------- tabs ---------- */
-document.querySelectorAll('.tab').forEach(t => {
+/* filled range track */
+function paintRange(el){
+  const min = +el.min, max = +el.max;
+  el.style.setProperty('--p', ((el.value - min) / (max - min) * 100) + '%');
+}
+
+/* tabs */
+document.querySelectorAll('.seg button').forEach(t => {
   t.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+    document.querySelectorAll('.seg button').forEach(x => x.classList.remove('on'));
     t.classList.add('on');
     $('panel1').style.display = t.dataset.panel === 'panel1' ? '' : 'none';
     $('panel2').style.display = t.dataset.panel === 'panel2' ? '' : 'none';
   });
 });
 
-/* ---------- ① 機会損失 ---------- */
+/* ── ① 機会損失 ── */
 function calcGap(){
   const seats = +$('seats').value, days = +$('days').value;
   const lP = +$('lPrice').value, dP = +$('dPrice').value;
@@ -407,12 +437,12 @@ function calcGap(){
   const dNow = seats * +$('dTurnNow').value * (+$('dOccNow').value/100) * days;
   const dMax = seats * +$('dTurnMax').value * (+$('dOccMax').value/100) * days;
 
-  $('o-lPrice').textContent = lP.toLocaleString() + '円';
-  $('o-dPrice').textContent = dP.toLocaleString() + '円';
-  $('o-lTurnNow').textContent = (+$('lTurnNow').value).toFixed(1);
-  $('o-lTurnMax').textContent = (+$('lTurnMax').value).toFixed(1);
-  $('o-dTurnNow').textContent = (+$('dTurnNow').value).toFixed(1);
-  $('o-dTurnMax').textContent = (+$('dTurnMax').value).toFixed(1);
+  $('o-lPrice').textContent = '¥' + lP.toLocaleString();
+  $('o-dPrice').textContent = '¥' + dP.toLocaleString();
+  $('o-lTurnNow').textContent = (+$('lTurnNow').value).toFixed(1) + '回転';
+  $('o-lTurnMax').textContent = (+$('lTurnMax').value).toFixed(1) + '回転';
+  $('o-dTurnNow').textContent = (+$('dTurnNow').value).toFixed(1) + '回転';
+  $('o-dTurnMax').textContent = (+$('dTurnMax').value).toFixed(1) + '回転';
   $('o-lOccNow').textContent = $('lOccNow').value + '%';
   $('o-lOccMax').textContent = $('lOccMax').value + '%';
   $('o-dOccNow').textContent = $('dOccNow').value + '%';
@@ -422,39 +452,44 @@ function calcGap(){
   const dinnerGap = Math.max(0, (dMax - dNow) * dP);
   const nowSales  = lNow * lP + dNow * dP;
   const maxSales  = lMax * lP + dMax * dP;
-  const gapN      = Math.max(0, Math.round(lMax - lNow)) + Math.max(0, Math.round(dMax - dNow));
+  const lAdd = Math.max(0, Math.round(lMax - lNow));
+  const dAdd = Math.max(0, Math.round(dMax - dNow));
 
   $('r-lunchGap').textContent  = yen(lunchGap);
-  $('r-lunchGapN').textContent = '+' + Math.max(0, Math.round(lMax - lNow)).toLocaleString() + '名分';
-  $('r-dinnerGap').textContent  = yen(dinnerGap);
-  $('r-dinnerGapN').textContent = '+' + Math.max(0, Math.round(dMax - dNow)).toLocaleString() + '名分';
+  $('r-lunchGapN').textContent = '+' + lAdd.toLocaleString() + ' 名分の伸び代';
+  $('r-dinnerGap').textContent = yen(dinnerGap);
+  $('r-dinnerGapN').textContent = '+' + dAdd.toLocaleString() + ' 名分の伸び代';
   $('r-totalGap').textContent  = yen(lunchGap + dinnerGap);
-  $('r-totalGapN').textContent = '計 ' + gapN.toLocaleString() + '名の獲得余地';
+  $('r-totalGapN').textContent = '計 ' + (lAdd + dAdd).toLocaleString() + ' 名の獲得余地';
 
-  $('r-bar').style.width = (maxSales > 0 ? Math.min(100, nowSales / maxSales * 100) : 0) + '%';
+  const rate = maxSales > 0 ? nowSales / maxSales * 100 : 0;
+  $('r-bar').style.width = Math.min(100, rate) + '%';
   $('r-nowSales').textContent = yen(nowSales);
+  $('r-maxSales').textContent = yen(maxSales);
+  $('r-rate').textContent = '達成率 ' + rate.toFixed(0) + '%';
 
   $('r-summary').innerHTML =
-    '現状の月間売上 <u>' + yen(nowSales) + '</u> に対し、集客最大化による月間 <strong>' +
-    yen(lunchGap + dinnerGap) + '</strong> の機会損失（伸び代）が発生しています。';
+    '現状の月間売上 <strong>' + yen(nowSales) + '</strong> に対し、集客を最大化すると月間 ' +
+    '<strong class="big">' + yen(lunchGap + dinnerGap) + '</strong> の機会損失（伸び代）があります。';
 }
 
-/* ---------- ② 費用対効果 ---------- */
+/* ── ② 費用対効果 ── */
 const PLANS = [
-  {fee:10000,  name:'ライト（月額1万）'},
-  {fee:25000,  name:'ベーシック（月額2.5万）'},
-  {fee:50000,  name:'スタンダード（月額5万）'},
-  {fee:100000, name:'プレミアム（月額10万）'}
+  {fee:10000,  name:'ライト'},
+  {fee:25000,  name:'ベーシック'},
+  {fee:50000,  name:'プレミアム5'},
+  {fee:100000, name:'プレミアム10'}
 ];
 const PER_GUEST = 200;
+const CHECK = '<span class="chk"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2l2.2 2.3 4.8-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
 
 function calcRoi(){
   const lP = +$('rLPrice').value, dP = +$('rDPrice').value;
   const lN = +$('rLNum').value,   dN = +$('rDNum').value;
   const fee = +$('plan').value;
 
-  $('o-rLPrice').textContent = lP.toLocaleString() + '円';
-  $('o-rDPrice').textContent = dP.toLocaleString() + '円';
+  $('o-rLPrice').textContent = '¥' + lP.toLocaleString();
+  $('o-rDPrice').textContent = '¥' + dP.toLocaleString();
 
   const guests = lN + dN;
   const sales  = lN * lP + dN * dP;
@@ -462,49 +497,59 @@ function calcRoi(){
   const cost   = fee + usage;
   const net    = sales - cost;
   const roi    = cost > 0 ? sales / cost : 0;
+  const sign   = v => (v >= 0 ? '+' : '-') + yen(Math.abs(v));
 
   $('c-cost').textContent   = yen(cost);
-  $('c-costBk').textContent = 'プラン' + yen(fee) + ' + 従量' + yen(usage);
-  $('c-net').textContent    = (net >= 0 ? '+' : '-') + yen(Math.abs(net));
-  $('c-net').style.color    = net >= 0 ? 'var(--green)' : 'var(--red)';
+  $('c-costBk').textContent = '月額' + yen(fee) + ' + 従量' + yen(usage);
+  $('c-net').textContent    = sign(net);
+  $('c-net').style.color    = net >= 0 ? 'var(--g)' : 'var(--r)';
   $('c-roi').textContent    = roi.toFixed(1) + '倍';
-  $('c-num').textContent    = guests.toLocaleString() + '名';
-  $('c-numBk').textContent  = 'ランチ' + lN + '名 ＋ ディナー' + dN + '名';
+  $('c-num').textContent    = guests.toLocaleString() + ' 名';
+  $('c-numBk').textContent  = 'ランチ ' + lN + '名 ＋ ディナー ' + dN + '名';
   $('c-sales').textContent  = yen(sales);
 
-  $('c-merit').textContent  = (net >= 0 ? '+' : '-') + yen(Math.abs(net));
+  $('c-merit').textContent  = sign(net);
   $('c-merit').classList.toggle('ng', net < 0);
-  $('c-merit6').textContent = (net >= 0 ? '+' : '-') + yen(Math.abs(net * 6));
+  $('c-merit6').textContent = sign(net * 6);
   $('c-merit6').classList.toggle('ng', net < 0);
 
   /* chart */
   const top = Math.max(sales, cost, 1);
-  const unit = Math.max(1, Math.ceil(top / 6 / 100000)) * 100000;  // 10万円刻みの目盛
-  const axisMax = unit * 6;
-  const ticks = [];
-  for(let i = 6; i >= 0; i--) ticks.push('¥' + (unit * i / 10000) + '万');
-  $('ch-y').innerHTML = ticks.map(t => '<span>' + t + '</span>').join('');
+  const unit = Math.max(1, Math.ceil(top / 5 / 100000)) * 100000;
+  const axisMax = unit * 5;
+  let ticks = '';
+  for(let i = 5; i >= 0; i--) ticks += '<span>' + man(unit * i) + '</span>';
+  $('ch-y').innerHTML = ticks;
   $('ch-sales').style.height = (sales / axisMax * 100) + '%';
   $('ch-cost').style.height  = (cost  / axisMax * 100) + '%';
+  $('ch-sv').textContent = yen(sales);
+  $('ch-cv').textContent = yen(cost);
 
-  /* plan comparison */
+  /* comparison */
+  let bestRoi = -1;
+  PLANS.forEach(p => { const r = (p.fee + usage) > 0 ? sales / (p.fee + usage) : 0; if(r > bestRoi) bestRoi = r; });
   $('cmp-body').innerHTML = PLANS.map(p => {
     const c = p.fee + usage;
-    const r = c > 0 ? (sales / c).toFixed(1) : '-';
+    const r = c > 0 ? sales / c : 0;
+    const best = Math.abs(r - bestRoi) < 1e-9 ? '<span class="best">最高効率</span>' : '';
     return '<tr class="' + (p.fee === fee ? 'sel' : '') + '">' +
-      '<td>' + p.name + '</td>' +
+      '<td><span class="pname">' + CHECK + p.name + best + '</span></td>' +
       '<td>' + yen(p.fee) + '</td>' +
       '<td>' + yen(usage) + '</td>' +
       '<td>' + yen(c) + '</td>' +
-      '<td class="roi">' + r + '倍</td></tr>';
+      '<td class="roi">' + r.toFixed(1) + '倍</td></tr>';
   }).join('');
 }
 
-/* ---------- bind ---------- */
-['seats','days','lPrice','lTurnNow','lOccNow','lTurnMax','lOccMax','dPrice','dTurnNow','dOccNow','dTurnMax','dOccMax']
-  .forEach(id => $(id).addEventListener('input', calcGap));
-['plan','rLPrice','rLNum','rDPrice','rDNum']
-  .forEach(id => $(id).addEventListener('input', calcRoi));
+/* bind */
+const P1 = ['seats','days','lPrice','lTurnNow','lOccNow','lTurnMax','lOccMax','dPrice','dTurnNow','dOccNow','dTurnMax','dOccMax'];
+const P2 = ['plan','rLPrice','rLNum','rDPrice','rDNum'];
+P1.forEach(id => $(id).addEventListener('input', calcGap));
+P2.forEach(id => $(id).addEventListener('input', calcRoi));
+document.querySelectorAll('input[type=range]').forEach(el => {
+  paintRange(el);
+  el.addEventListener('input', () => paintRange(el));
+});
 
 calcGap();
 calcRoi();
