@@ -84,6 +84,16 @@ select:hover{border-color:#D2D5DE;}
 .grp-d .grp-ttl{color:var(--bd);}
 #panel2 .grp-ttl{color:var(--bd);}
 .grp-ttl .tg{font-size:9px;font-weight:800;letter-spacing:.04em;padding:2px 8px;border-radius:6px;background:#fff;border:1px solid var(--line2);color:var(--mu);}
+/* 営業あり/なし トグル */
+.optoggle{margin-left:auto;display:inline-flex;background:#fff;border:1px solid var(--line2);border-radius:9px;padding:2px;gap:2px;box-shadow:inset 0 1px 1px rgba(22,24,29,.04);}
+.optoggle button{font-family:var(--ff);font-size:10px;font-weight:800;letter-spacing:.02em;color:var(--mu);background:none;border:none;border-radius:7px;padding:5px 10px;cursor:pointer;transition:background .15s,color .15s;}
+.optoggle button.on{color:#fff;}
+#panel1 .optoggle button.on{background:var(--v);}
+#panel2 .optoggle button.on{background:var(--b);}
+.grp.off .optoggle button.on{background:#878D99;}
+.grp.off .grp-ttl{color:var(--mu);}
+.grp.off .sl,.grp.off .field{opacity:.35;pointer-events:none;filter:grayscale(.5);}
+.grp.off{background:#FAFAFB;border-color:var(--line);}
 
 .sl{margin-bottom:15px;}
 .sl-hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;}
@@ -224,7 +234,9 @@ footer{margin-top:52px;text-align:center;font-size:11px;color:var(--mu2);font-we
       </div>
 
       <div class="grp grp-l">
-        <div class="grp-ttl">昼の営業<span class="tg">LUNCH</span></div>
+        <div class="grp-ttl">昼の営業<span class="tg">LUNCH</span>
+          <div class="optoggle" data-meal="l"><button class="on" data-v="1">営業あり</button><button data-v="0">営業なし</button></div>
+        </div>
         <div class="sl">
           <div class="sl-hd"><label>想定客単価</label><output id="o-lPrice"></output></div>
           <input type="range" id="lPrice" min="500" max="3000" step="100" value="1500">
@@ -240,7 +252,9 @@ footer{margin-top:52px;text-align:center;font-size:11px;color:var(--mu2);font-we
       </div>
 
       <div class="grp grp-d">
-        <div class="grp-ttl">夜の営業<span class="tg">DINNER</span></div>
+        <div class="grp-ttl">夜の営業<span class="tg">DINNER</span>
+          <div class="optoggle" data-meal="d"><button class="on" data-v="1">営業あり</button><button data-v="0">営業なし</button></div>
+        </div>
         <div class="sl">
           <div class="sl-hd"><label>想定客単価</label><output id="o-dPrice"></output></div>
           <input type="range" id="dPrice" min="1000" max="15000" step="250" value="5000">
@@ -309,7 +323,9 @@ footer{margin-top:52px;text-align:center;font-size:11px;color:var(--mu2);font-we
       </div>
 
       <div class="grp grp-l">
-        <div class="grp-ttl">昼の予約<span class="tg">LUNCH</span></div>
+        <div class="grp-ttl">昼の予約<span class="tg">LUNCH</span>
+          <div class="optoggle" data-meal="rl"><button class="on" data-v="1">営業あり</button><button data-v="0">営業なし</button></div>
+        </div>
         <div class="sl">
           <div class="sl-hd"><label>ランチ客単価</label><output id="o-rLPrice"></output></div>
           <input type="range" id="rLPrice" min="500" max="3000" step="100" value="1500">
@@ -318,7 +334,9 @@ footer{margin-top:52px;text-align:center;font-size:11px;color:var(--mu2);font-we
       </div>
 
       <div class="grp grp-d">
-        <div class="grp-ttl">夜の予約<span class="tg">DINNER</span></div>
+        <div class="grp-ttl">夜の予約<span class="tg">DINNER</span>
+          <div class="optoggle" data-meal="rd"><button class="on" data-v="1">営業あり</button><button data-v="0">営業なし</button></div>
+        </div>
         <div class="sl">
           <div class="sl-hd"><label>ディナー客単価</label><output id="o-rDPrice"></output></div>
           <input type="range" id="rDPrice" min="1000" max="15000" step="250" value="5000">
@@ -428,14 +446,18 @@ document.querySelectorAll('.seg button').forEach(t => {
   });
 });
 
+/* 営業あり/なし */
+const togOn = m => document.querySelector('.optoggle[data-meal="'+m+'"] button.on').dataset.v === '1';
+
 /* ── ① 機会損失 ── */
 function calcGap(){
   const seats = +$('seats').value, days = +$('days').value;
   const lP = +$('lPrice').value, dP = +$('dPrice').value;
-  const lNow = seats * +$('lTurnNow').value * (+$('lOccNow').value/100) * days;
-  const lMax = seats * +$('lTurnMax').value * (+$('lOccMax').value/100) * days;
-  const dNow = seats * +$('dTurnNow').value * (+$('dOccNow').value/100) * days;
-  const dMax = seats * +$('dTurnMax').value * (+$('dOccMax').value/100) * days;
+  const lon = togOn('l'), don = togOn('d');
+  const lNow = lon ? seats * +$('lTurnNow').value * (+$('lOccNow').value/100) * days : 0;
+  const lMax = lon ? seats * +$('lTurnMax').value * (+$('lOccMax').value/100) * days : 0;
+  const dNow = don ? seats * +$('dTurnNow').value * (+$('dOccNow').value/100) * days : 0;
+  const dMax = don ? seats * +$('dTurnMax').value * (+$('dOccMax').value/100) * days : 0;
 
   $('o-lPrice').textContent = '¥' + lP.toLocaleString();
   $('o-dPrice').textContent = '¥' + dP.toLocaleString();
@@ -455,10 +477,10 @@ function calcGap(){
   const lAdd = Math.max(0, Math.round(lMax - lNow));
   const dAdd = Math.max(0, Math.round(dMax - dNow));
 
-  $('r-lunchGap').textContent  = yen(lunchGap);
-  $('r-lunchGapN').textContent = '+' + lAdd.toLocaleString() + ' 名分の伸び代';
-  $('r-dinnerGap').textContent = yen(dinnerGap);
-  $('r-dinnerGapN').textContent = '+' + dAdd.toLocaleString() + ' 名分の伸び代';
+  $('r-lunchGap').textContent  = lon ? yen(lunchGap) : '—';
+  $('r-lunchGapN').textContent = lon ? '+' + lAdd.toLocaleString() + ' 名分の伸び代' : '営業なし';
+  $('r-dinnerGap').textContent = don ? yen(dinnerGap) : '—';
+  $('r-dinnerGapN').textContent = don ? '+' + dAdd.toLocaleString() + ' 名分の伸び代' : '営業なし';
   $('r-totalGap').textContent  = yen(lunchGap + dinnerGap);
   $('r-totalGapN').textContent = '計 ' + (lAdd + dAdd).toLocaleString() + ' 名の獲得余地';
 
@@ -468,9 +490,10 @@ function calcGap(){
   $('r-maxSales').textContent = yen(maxSales);
   $('r-rate').textContent = '達成率 ' + rate.toFixed(0) + '%';
 
-  $('r-summary').innerHTML =
-    '現状の月間売上 <strong>' + yen(nowSales) + '</strong> に対し、集客を最大化すると月間 ' +
-    '<strong class="big">' + yen(lunchGap + dinnerGap) + '</strong> の機会損失（伸び代）があります。';
+  $('r-summary').innerHTML = (!lon && !don)
+    ? '昼・夜とも「営業なし」です。営業する時間帯を「営業あり」に切り替えてください。'
+    : '現状の月間売上 <strong>' + yen(nowSales) + '</strong> に対し、集客を最大化すると月間 ' +
+      '<strong class="big">' + yen(lunchGap + dinnerGap) + '</strong> の機会損失（伸び代）があります。';
 }
 
 /* ── ② 費用対効果 ── */
@@ -485,7 +508,9 @@ const CHECK = '<span class="chk"><svg viewBox="0 0 12 12" fill="none"><path d="M
 
 function calcRoi(){
   const lP = +$('rLPrice').value, dP = +$('rDPrice').value;
-  const lN = +$('rLNum').value,   dN = +$('rDNum').value;
+  const lon = togOn('rl'), don = togOn('rd');
+  const lN = lon ? +$('rLNum').value : 0;
+  const dN = don ? +$('rDNum').value : 0;
   const fee = +$('plan').value;
 
   $('o-rLPrice').textContent = '¥' + lP.toLocaleString();
@@ -505,7 +530,7 @@ function calcRoi(){
   $('c-net').style.color    = net >= 0 ? 'var(--g)' : 'var(--r)';
   $('c-roi').textContent    = roi.toFixed(1) + '倍';
   $('c-num').textContent    = guests.toLocaleString() + ' 名';
-  $('c-numBk').textContent  = 'ランチ ' + lN + '名 ＋ ディナー ' + dN + '名';
+  $('c-numBk').textContent  = (lon ? 'ランチ ' + lN + '名' : 'ランチ 営業なし') + ' ＋ ' + (don ? 'ディナー ' + dN + '名' : 'ディナー 営業なし');
   $('c-sales').textContent  = yen(sales);
 
   $('c-merit').textContent  = sign(net);
@@ -549,6 +574,16 @@ P2.forEach(id => $(id).addEventListener('input', calcRoi));
 document.querySelectorAll('input[type=range]').forEach(el => {
   paintRange(el);
   el.addEventListener('input', () => paintRange(el));
+});
+document.querySelectorAll('.optoggle').forEach(tg => {
+  tg.querySelectorAll('button').forEach(b => {
+    b.addEventListener('click', () => {
+      tg.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+      tg.closest('.grp').classList.toggle('off', b.dataset.v === '0');
+      (tg.dataset.meal[0] === 'r' ? calcRoi : calcGap)();
+    });
+  });
 });
 
 calcGap();
