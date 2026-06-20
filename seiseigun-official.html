@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>セイセイ君 Official</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap');
+
+  :root {
+    --bg:    #FAF6EF;
+    --ink:   #1F2430;
+    --ember: #D85C2C;
+    --gold:  #B98A1E;
+    --line:  #E4DCC9;
+    --muted: #9A9587;
+    --white: #FFFFFF;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    line-height: 1.7;
+  }
+
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+
+  /* ─── Navigation ─── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(250, 246, 239, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  .nav-logo {
+    font-weight: 900;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--ember); }
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+  .nav-links a {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--ink); }
+
+  /* ─── Hero ─── */
+  .hero {
+    padding: 120px 0 96px;
+    border-bottom: 1px solid var(--line);
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: .12em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(48px, 8vw, 88px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin-bottom: 24px;
+  }
+  .hero h1 .accent { color: var(--ember); }
+  .hero-lead {
+    font-size: clamp(16px, 2vw, 19px);
+    color: var(--muted);
+    max-width: 540px;
+    line-height: 1.8;
+    margin-bottom: 48px;
+  }
+  .btn-row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    border-radius: 3px;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    transition: all .2s;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-primary {
+    background: var(--ember);
+    color: #fff;
+  }
+  .btn-primary:hover { background: #C0501F; }
+  .btn-outline {
+    background: transparent;
+    color: var(--ink);
+    border: 1.5px solid var(--ink);
+  }
+  .btn-outline:hover { background: var(--ink); color: var(--bg); }
+
+  /* ─── Section shared ─── */
+  .section { padding: 96px 0; }
+  .section + .section { border-top: 1px solid var(--line); }
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  .section-heading {
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 900;
+    letter-spacing: -0.01em;
+    margin-bottom: 20px;
+  }
+  .section-body {
+    font-size: 16px;
+    color: var(--muted);
+    max-width: 600px;
+    line-height: 1.9;
+  }
+
+  /* ─── About ─── */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: start;
+    margin-top: 48px;
+  }
+  @media (max-width: 680px) { .about-grid { grid-template-columns: 1fr; gap: 40px; } }
+  .about-visual {
+    aspect-ratio: 4/3;
+    background: var(--ink);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #fff;
+  }
+  .about-visual .char {
+    font-size: 72px;
+    line-height: 1;
+  }
+  .about-visual .char-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.4);
+  }
+  .about-points { display: flex; flex-direction: column; gap: 24px; padding-top: 8px; }
+  .point {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .point-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ember);
+    padding-top: 4px;
+    flex-shrink: 0;
+    width: 24px;
+  }
+  .point-text h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .point-text p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  /* ─── Business / Series ─── */
+  .series-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2px;
+    margin-top: 48px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .series-card {
+    background: var(--white);
+    padding: 36px 32px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    transition: background .15s;
+  }
+  .series-card:hover { background: #F5F0E8; }
+  .series-card.coming {
+    opacity: .5;
+    cursor: default;
+  }
+  .series-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ember);
+    margin-bottom: 12px;
+  }
+  .series-card h3 {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: -.01em;
+    margin-bottom: 8px;
+  }
+  .series-card p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+  .series-status {
+    display: inline-block;
+    margin-top: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 2px;
+    background: var(--line);
+    color: var(--muted);
+  }
+  .series-status.active {
+    background: #EBF5EA;
+    color: #3A7D35;
+  }
+
+  /* ─── Timeline ─── */
+  .timeline { margin-top: 48px; }
+  .timeline-item {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 32px;
+    padding: 28px 0;
+    border-bottom: 1px solid var(--line);
+    align-items: start;
+  }
+  .timeline-item:first-child { border-top: 1px solid var(--line); }
+  .tl-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    padding-top: 3px;
+  }
+  .tl-content h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .tl-content p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+  /* ─── Unit / Team ─── */
+  .unit-header {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    margin-bottom: 48px;
+    flex-wrap: wrap;
+  }
+  .unit-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .1em;
+    padding: 5px 12px;
+    border: 1.5px solid var(--ink);
+    border-radius: 2px;
+    color: var(--ink);
+    text-transform: uppercase;
+  }
+  .members-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 24px;
+  }
+  .member-card {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 28px 24px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .member-card:hover {
+    border-color: var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .member-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--line);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--muted);
+  }
+  .member-name {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: -.01em;
+  }
+  .member-role {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 10px;
+  }
+  .member-desc { font-size: 13px; color: var(--muted); line-height: 1.7; }
+  .member-card.placeholder {
+    border-style: dashed;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 160px;
+    gap: 8px;
+    color: var(--muted);
+  }
+  .member-card.placeholder:hover { border-color: var(--muted); box-shadow: none; }
+  .placeholder-icon { font-size: 24px; opacity: .4; }
+  .placeholder-text { font-size: 13px; }
+
+  /* ─── Contact ─── */
+  .contact-box {
+    background: var(--ink);
+    color: var(--bg);
+    border-radius: 4px;
+    padding: 64px 48px;
+    margin-top: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+  .contact-box .section-label { color: var(--gold); }
+  .contact-box .section-heading { color: var(--bg); margin-bottom: 12px; }
+  .contact-box p { color: rgba(250,246,239,.6); font-size: 15px; }
+  .btn-light {
+    background: var(--bg);
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .btn-light:hover { background: #fff; }
+
+  /* ─── Footer ─── */
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 40px 0;
+    margin-top: 0;
+  }
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .footer-logo {
+    font-weight: 900;
+    font-size: 16px;
+    letter-spacing: -0.01em;
+  }
+  .footer-logo span { color: var(--ember); }
+  .footer-copy {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: .06em;
+  }
+  .footer-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+  }
+  .footer-links a {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .footer-links a:hover { color: var(--ink); }
+
+  /* ─── Divider ─── */
+  .divider { border: none; border-top: 1px solid var(--line); }
+
+  /* ─── Note ─── */
+  .note {
+    font-size: 13px;
+    color: var(--muted);
+    padding-top: 24px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" href="#top">セイセイ<span>君</span></a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#series">Series</a></li>
+      <li><a href="#unit">Unit</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Hero -->
+<header class="hero wrap" id="top">
+  <div class="eyebrow">Official Site</div>
+  <h1>セイセイ<span class="accent">君</span><br>シリーズ</h1>
+  <p class="hero-lead">
+    大脇ユニットが手がける、新しい事業の形。<br>
+    セイセイ君シリーズは、独自のコンセプトと<br>
+    メンバーの力で社会に価値を届けます。
+  </p>
+  <div class="btn-row">
+    <a class="btn btn-primary" href="#series">シリーズを見る</a>
+    <a class="btn btn-outline" href="#unit">ユニット紹介</a>
+  </div>
+</header>
+
+<!-- About -->
+<section class="section wrap" id="about">
+  <div class="section-label">About</div>
+  <h2 class="section-heading">セイセイ君シリーズとは</h2>
+  <p class="section-body">
+    セイセイ君シリーズは、大脇ユニットが展開する事業ブランドです。
+    コンテンツ・サービス・コミュニティを軸に、それぞれのフィールドで
+    独立した価値を生み出しながら、ひとつの世界観として繋がっています。
+  </p>
+
+  <div class="about-grid">
+    <div class="about-visual">
+      <div class="char">🎯</div>
+      <div class="char-label">Seiseigun Series</div>
+    </div>
+    <div class="about-points">
+      <div class="point">
+        <div class="point-num">01</div>
+        <div class="point-text">
+          <h3>独自のコンセプト</h3>
+          <p>既存のカテゴリに収まらない、セイセイ君ならではの世界観と価値提供を追求します。</p>
+        </div>
+      </div>
+      <div class="point">
+        <div class="point-num">02</div>
+        <div class="point-text">
+          <h3>チームで作る</h3>
+          <p>大脇ユニットのメンバーが各々の強みを持ち寄り、事業を横断的に支えます。</p>
+        </div>
+      </div>
+      <div class="point">
+        <div class="point-num">03</div>
+        <div class="point-text">
+          <h3>継続的な展開</h3>
+          <p>単発で終わらず、シリーズとして積み上げ、ブランドの資産を育てていきます。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Series / Business -->
+<section class="section wrap" id="series">
+  <div class="section-label">Business</div>
+  <h2 class="section-heading">事業ラインナップ</h2>
+  <p class="section-body">
+    セイセイ君シリーズが展開する事業領域。
+    各プロジェクトは独立して動きながら、共通のブランド基盤で繋がっています。
+  </p>
+
+  <div class="series-grid">
+    <div class="series-card">
+      <div class="series-tag">Project 01</div>
+      <h3>コンテンツ事業</h3>
+      <p>セイセイ君キャラクターを軸にした映像・テキスト・SNSコンテンツの企画・制作・配信。</p>
+      <span class="series-status active">Active</span>
+    </div>
+    <div class="series-card">
+      <div class="series-tag">Project 02</div>
+      <h3>グッズ・物販</h3>
+      <p>キャラクターデザインを活かしたオリジナルグッズの開発と販売チャネルの構築。</p>
+      <span class="series-status">Planning</span>
+    </div>
+    <div class="series-card">
+      <div class="series-tag">Project 03</div>
+      <h3>イベント・体験</h3>
+      <p>ファンやコミュニティと直接つながるリアルイベント・オンライン体験の設計と運営。</p>
+      <span class="series-status">Planning</span>
+    </div>
+    <div class="series-card coming">
+      <div class="series-tag">Project 04</div>
+      <h3>コラボレーション</h3>
+      <p>外部ブランド・クリエイターとの共同プロジェクト。詳細は順次公開予定。</p>
+      <span class="series-status">Coming Soon</span>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="section-label" style="margin-top:72px; margin-bottom:0;">Roadmap</div>
+  <h3 style="font-size:22px; font-weight:900; margin:12px 0 0; letter-spacing:-.01em;">展開スケジュール</h3>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="tl-date">2026 Q1</div>
+      <div class="tl-content">
+        <h3>大脇ユニット始動・コンテンツ制作開始</h3>
+        <p>チーム体制を整え、セイセイ君シリーズの世界観設計とコンテンツ制作を開始。</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="tl-date">2026 Q2</div>
+      <div class="tl-content">
+        <h3>公式サイト公開・SNS本格運用</h3>
+        <p>本サイトの公開と合わせ、各SNSチャンネルでの情報発信を本格化。</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="tl-date">2026 Q3</div>
+      <div class="tl-content">
+        <h3>グッズ第1弾リリース予定</h3>
+        <p>オリジナルグッズの第1弾を展開。ラインナップは準備中。</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="tl-date">2026 Q4〜</div>
+      <div class="tl-content">
+        <h3>イベント・コラボ展開</h3>
+        <p>リアルイベントおよびコラボレーション企画の詳細を順次発表予定。</p>
+      </div>
+    </div>
+  </div>
+  <p class="note">※ スケジュールは変更になる場合があります。</p>
+</section>
+
+<!-- Unit / Team -->
+<section class="section wrap" id="unit">
+  <div class="section-label">Unit</div>
+  <div class="unit-header">
+    <h2 class="section-heading" style="margin-bottom:0;">大脇ユニット</h2>
+    <span class="unit-badge">Owaki Unit</span>
+  </div>
+  <p class="section-body" style="margin-bottom:48px;">
+    セイセイ君シリーズを企画・運営するチーム。
+    それぞれの専門性を活かしながら、事業全体を横断的に推進します。
+  </p>
+
+  <div class="members-grid">
+    <div class="member-card">
+      <div class="member-avatar">菅</div>
+      <div class="member-name">菅原 宗大</div>
+      <div class="member-role">Member</div>
+      <div class="member-desc">役割・紹介文は調整中です。</div>
+    </div>
+    <div class="member-card placeholder">
+      <div class="placeholder-icon">＋</div>
+      <div class="placeholder-text">メンバー未定</div>
+    </div>
+    <div class="member-card placeholder">
+      <div class="placeholder-icon">＋</div>
+      <div class="placeholder-text">メンバー未定</div>
+    </div>
+    <div class="member-card placeholder">
+      <div class="placeholder-icon">＋</div>
+      <div class="placeholder-text">メンバー未定</div>
+    </div>
+    <div class="member-card placeholder">
+      <div class="placeholder-icon">＋</div>
+      <div class="placeholder-text">メンバー未定</div>
+    </div>
+  </div>
+  <p class="note">※ メンバー情報は確定次第、順次更新します。</p>
+</section>
+
+<!-- Contact -->
+<section class="section wrap" id="contact">
+  <div class="section-label">Contact</div>
+  <h2 class="section-heading">お問い合わせ</h2>
+  <p class="section-body">
+    コラボレーション・取材・その他のご相談は、以下よりお気軽にご連絡ください。
+  </p>
+
+  <div class="contact-box">
+    <div>
+      <div class="section-label">Get in Touch</div>
+      <h3 class="section-heading">一緒に作りましょう</h3>
+      <p>事業連携・コンテンツ制作・イベント企画など、<br>あらゆるご相談をお待ちしています。</p>
+    </div>
+    <a class="btn btn-light" href="mailto:contact@example.com">メールで問い合わせる</a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="wrap">
+    <div class="footer-inner">
+      <div class="footer-logo">セイセイ<span>君</span> Official</div>
+      <ul class="footer-links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#series">Series</a></li>
+        <li><a href="#unit">Unit</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+      <div class="footer-copy">&copy; 2026 大脇ユニット. All rights reserved.</div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
