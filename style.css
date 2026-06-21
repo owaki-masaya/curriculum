@@ -46,11 +46,18 @@ nav {
   text-decoration: none;
   white-space: nowrap;
 }
-.nav-links { display: flex; gap: 36px; list-style: none; }
+.nav-links {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 36px;
+  list-style: none;
+}
+.nav-links li { flex: 0 0 auto; }
 .nav-links a {
   font-size: 14px;
   color: var(--mid);
   text-decoration: none;
+  white-space: nowrap;
   transition: color .2s;
 }
 .nav-links a:hover  { color: var(--ink); }
@@ -339,13 +346,18 @@ footer { background: var(--ink); padding: 48px 0; }
   .nav-inner {
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     padding: 10px 16px;
   }
-  .nav-logo   { font-size: 14px; }
-  .nav-links  { gap: 14px; }
-  .nav-links a { font-size: 12px; white-space: nowrap; }
-  .hero       { padding-top: 88px; }
+  .nav-logo   { font-size: 15px; }
+  .nav-links  {
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: nowrap;
+  }
+  .nav-links li { flex: 0 0 auto; }
+  .nav-links a  { font-size: 13px; white-space: nowrap; }
+  .hero       { padding-top: 92px; }
   .wrap       { padding: 0 20px; }
   .section    { padding: 60px 0; }
   .job-card   { flex-direction: column; }
