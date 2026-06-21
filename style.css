@@ -155,37 +155,38 @@ nav {
 /* ── 取締役紹介 ── */
 .exec-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 28px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px;
   margin-top: 48px;
+  max-width: 760px;
+}
+@media (max-width: 600px) {
+  .exec-grid { grid-template-columns: 1fr; gap: 48px; }
 }
 .exec-card {
-  background: var(--white);
-  border: 1.5px solid var(--faint);
-  border-radius: 8px;
-  padding: 44px 32px 36px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   text-align: center;
-  transition: border-color .2s, box-shadow .2s;
 }
-.exec-card:hover {
-  border-color: var(--ink);
-  box-shadow: 4px 4px 0 var(--ink);
+.exec-photo {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  margin-bottom: 20px;
 }
-.exec-avatar {
-  width: 84px;
-  height: 84px;
-  border-radius: 50%;
-  background: var(--ink);
-  color: rgba(255,255,255,.28);
-  font-size: 32px;
-  font-weight: 900;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 22px;
+.exec-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 28%;
+  display: block;
+  /* 下端・側端を背景色へ自然に溶け込ませ、画像の貼り付け感を消す */
+  -webkit-mask-image:
+    linear-gradient(to bottom, #000 58%, transparent 100%),
+    linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
+          mask-image:
+    linear-gradient(to bottom, #000 58%, transparent 100%),
+    linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  -webkit-mask-composite: source-in;
+          mask-composite: intersect;
 }
 .exec-role {
   font-size: 13px;
