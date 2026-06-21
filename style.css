@@ -233,7 +233,7 @@ nav {
           mask-composite: intersect;
 }
 /* 顔の高さを揃えるため写真ごとに縦位置を個別調整 */
-.exec-photo--owaki    img { object-position: center 22%; }
+.exec-photo--owaki    img { object-position: center 45%; }
 .exec-photo--sugawara img { object-position: center 8%; }
 .exec-role {
   font-size: 13px;
