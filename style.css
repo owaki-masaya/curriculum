@@ -1,0 +1,364 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap');
+
+:root {
+  --white: #FFFFFF;
+  --bg:    #F5F7FA;
+  --ink:   #0B1829;
+  --mid:   #52637A;
+  --faint: #DDE4EE;
+  --blue:  #1A56DB;
+  --blue-d:#1340B0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--white);
+  color: var(--ink);
+  font-family: 'Gothic MB101', 'ヒラギノ角ゴ ProN', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+  line-height: 1.7;
+}
+
+/* ── Nav ── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 300;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0,0,0,.07);
+}
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px 40px;
+}
+.nav-logo {
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: -.01em;
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.nav-links {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 36px;
+  list-style: none;
+}
+.nav-links li { flex: 0 0 auto; }
+.nav-links a {
+  font-size: 14px;
+  color: var(--mid);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color .2s;
+}
+.nav-links a:hover  { color: var(--ink); }
+.nav-links a.active { color: var(--ink); font-weight: 700; }
+
+/* ── Hero ── */
+.hero {
+  position: relative;
+  height: 56vh;
+  min-height: 340px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 64px;
+  overflow: hidden;
+  background: #020D1E;
+}
+
+/* サブページ用：静止画背景 */
+.hero--photo {
+  background:
+    linear-gradient(to bottom, rgba(0,15,45,.50) 0%, rgba(0,25,65,.62) 100%),
+    url('https://images.unsplash.com/photo-1505118380757-91f5f5632de0?auto=format&fit=crop&w=1920&q=80')
+    center / cover no-repeat;
+}
+
+/* 背景動画 */
+.hero-video {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+.hero-video video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 177.78vh;
+  height: 56.25vw;
+  min-width: 100%;
+  min-height: 100%;
+  object-fit: cover;
+}
+
+/* オーバーレイ（文字の視認性確保） */
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,15,45,.48) 0%, rgba(0,25,65,.60) 100%);
+  z-index: 1;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: #fff;
+  padding: 0 24px;
+}
+.hero-content h1 {
+  font-size: clamp(32px, 6vw, 64px);
+  font-weight: 900;
+  letter-spacing: -.025em;
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+.hero-content p {
+  font-size: clamp(15px, 1.8vw, 19px);
+  color: rgba(255,255,255,.75);
+  line-height: 1.9;
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+/* ── Layout ── */
+.wrap { max-width: 1000px; margin: 0 auto; padding: 0 40px; }
+
+.section { padding: 80px 0; }
+.section-white { background: var(--white); }
+.section-tint  { background: var(--bg); }
+.section + .section { border-top: 1px solid var(--faint); }
+
+/* ── Typography ── */
+.section-title {
+  font-size: clamp(22px, 3.2vw, 38px);
+  font-weight: 900;
+  letter-spacing: -.02em;
+  margin-bottom: 16px;
+}
+.section-lead {
+  font-size: 16px;
+  color: var(--mid);
+  max-width: 660px;
+  line-height: 1.95;
+}
+
+/* ── 会社概要 ── */
+.about-catch {
+  font-size: clamp(20px, 3vw, 32px);
+  font-weight: 900;
+  letter-spacing: -.015em;
+  line-height: 1.55;
+  padding-bottom: 48px;
+  border-bottom: 1px solid var(--faint);
+  margin-bottom: 48px;
+}
+.about-body {
+  font-size: 16px;
+  color: var(--mid);
+  line-height: 2.2;
+  max-width: 740px;
+}
+.about-body p { margin-bottom: 24px; }
+.about-body p:last-child { margin-bottom: 0; }
+
+.info-table {
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 520px;
+  margin-top: 56px;
+  font-size: 15px;
+}
+.info-table tr { border-bottom: 1px solid var(--faint); }
+.info-table tr:first-child { border-top: 1px solid var(--faint); }
+.info-table th {
+  text-align: left;
+  padding: 18px 0;
+  width: 140px;
+  font-weight: 700;
+  color: var(--ink);
+  vertical-align: top;
+}
+.info-table td {
+  padding: 18px 0;
+  color: var(--mid);
+}
+
+/* ── 取締役紹介 ── */
+.exec-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px;
+  margin: 48px auto 0;
+  max-width: 760px;
+}
+@media (max-width: 600px) {
+  .exec-grid { grid-template-columns: 1fr; gap: 48px; }
+}
+.exec-card {
+  text-align: center;
+}
+.exec-photo {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  margin-bottom: 20px;
+}
+.exec-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 15%;   /* デフォルト（個別に上書き） */
+  display: block;
+  -webkit-mask-image:
+    linear-gradient(to bottom, #000 58%, transparent 100%),
+    linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
+          mask-image:
+    linear-gradient(to bottom, #000 58%, transparent 100%),
+    linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  -webkit-mask-composite: source-in;
+          mask-composite: intersect;
+}
+/* 顔の高さを揃えるため写真ごとに縦位置を個別調整 */
+.exec-photo--owaki    img { object-position: center 22%; }
+.exec-photo--sugawara img { object-position: center 42%; }
+.exec-role {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: .03em;
+  margin-bottom: 8px;
+}
+.exec-name {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -.01em;
+}
+
+/* ── 事業 ── */
+.biz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  margin-top: 48px;
+}
+.biz-card {
+  background: var(--bg);
+  border: 1.5px solid var(--faint);
+  border-radius: 8px;
+  padding: 36px 32px;
+  transition: border-color .2s, transform .2s, box-shadow .2s;
+}
+.biz-card:hover {
+  border-color: var(--blue);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(26,86,219,.1);
+}
+.biz-icon { font-size: 28px; margin-bottom: 16px; }
+.biz-card h3 {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -.01em;
+  margin-bottom: 10px;
+}
+.biz-card p { font-size: 14px; color: var(--mid); line-height: 1.85; }
+
+/* ── 採用 ── */
+.job-card {
+  background: var(--bg);
+  border: 1.5px solid var(--faint);
+  border-radius: 8px;
+  padding: 40px 36px;
+  margin-top: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  flex-wrap: wrap;
+  transition: border-color .2s;
+}
+.job-card:hover { border-color: var(--blue); }
+.job-tag {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--blue);
+  background: rgba(26,86,219,.09);
+  padding: 5px 12px;
+  border-radius: 4px;
+  margin-bottom: 14px;
+}
+.job-card h3 {
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -.02em;
+  margin-bottom: 10px;
+}
+.job-card p { font-size: 14px; color: var(--mid); line-height: 1.8; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 14px 30px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+  border: none;
+  cursor: pointer;
+  transition: all .2s;
+}
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-primary:hover { background: var(--blue-d); }
+
+/* ── Footer ── */
+footer { background: var(--ink); padding: 48px 0; }
+.footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.footer-logo { font-size: 16px; font-weight: 900; color: #fff; }
+.footer-links { display: flex; gap: 24px; list-style: none; }
+.footer-links a { font-size: 13px; color: rgba(255,255,255,.45); text-decoration: none; }
+.footer-links a:hover { color: #fff; }
+.footer-copy { font-size: 12px; color: rgba(255,255,255,.3); letter-spacing: .04em; }
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .nav-inner {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+  }
+  .nav-logo   { font-size: 15px; }
+  .nav-links  {
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: nowrap;
+  }
+  .nav-links li { flex: 0 0 auto; }
+  .nav-links a  { font-size: 13px; white-space: nowrap; }
+  .hero       { padding-top: 92px; }
+  .wrap       { padding: 0 20px; }
+  .section    { padding: 60px 0; }
+  .job-card   { flex-direction: column; }
+}
